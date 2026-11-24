@@ -381,3 +381,30 @@ input[type="text"] {
   color: #0f172a;
   word-break: break-word;
 }
+
+/* =========================================================================
+   LEGENDA RASTER DINAMIS (GRADASI & LABEL MIN/MAX)
+   ========================================================================= */
+.legend {
+  max-height: 65vh;
+  overflow-y: auto;
+  min-width: 190px;
+}
+
+.raster-gradient-bar {
+  width: 100%;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid #475569;
+  margin: 5px 0 3px 0;
+  box-sizing: border-box;
+}
+
+.raster-gradient-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #cbd5e1;
+  margin-bottom: 2px;
+}
