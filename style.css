@@ -154,15 +154,18 @@ input[type="text"] {
 }
 
 .layer-item {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
   margin: 5px 0;
+  overflow: hidden;
 }
 
 .checkbox-label {
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   margin: 0;
@@ -177,6 +180,7 @@ input[type="text"] {
   width: 14px;
   height: 14px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .layer-opacity {
