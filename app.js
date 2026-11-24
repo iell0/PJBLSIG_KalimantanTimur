@@ -1,7 +1,55 @@
 // =========================================================================
-// 1. INISIALISASI PETA & BASEMAP
+// 0. KONFIGURASI DATA (ubah nama file / tipe layer di sini)
+// =========================================================================
+const AOI_FILE    = './data/AOI_Kaltim_PL_Kota.geojson';
+const BAHAYA_FILE = 'data/model_bahaya_api.geojson';
+
+// Bobot model awal. Bobot aktif bisa diubah oleh simulasi.js lewat WebGIS.setBobotAktif()
+const DEFAULT_WEIGHTS = { gambut: 30, iklim: 25, permukaan: 25, akses: 20 };
+let activeWeights = { ...DEFAULT_WEIGHTS };
+
+const POLY = (fill, line) => ({ fillColor: fill, color: line, weight: 1, fillOpacity: 0.6 });
+
+// type: 'vector' (GeoJSON, default) | 'raster' (GeoTIFF, butuh georaster) | 'tile' (XYZ)
+// point: true  -> ditampilkan sebagai circleMarker
+//
+// Contoh mengganti ke raster GeoTIFF:
+//   { key: 'ndvi', title: 'Parameter: NDVI', file: 'data/ndvi.tif', type: 'raster' }
+// Contoh tile XYZ:
+//   { key: 'lst', title: 'Parameter: LST', file: 'data/tiles/lst/{z}/{x}/{y}.png', type: 'tile', minZoom: 6, maxZoom: 13 }
+const DATA_LAYERS = [
+  // --- Titik ---
+  { key: 'titik_api', title: 'Titik Api Historis (Hotspot)', file: 'data/titik_api_firms.geojson', point: true,
+    style: { radius: 5, fillColor: '#fef08a', color: '#dc2626', weight: 1.5, fillOpacity: 0.9 } },
+  { key: 'dampak', title: 'Objek Analisis Dampak', file: 'data/dampak_fasilitas.geojson', point: true,
+    style: { radius: 6, fillColor: '#38bdf8', color: '#0369a1', weight: 1.5, fillOpacity: 0.9 } },
+
+  // --- Parameter ---
+  { key: 'curah_hujan',   title: 'Parameter: Curah Hujan',       file: 'data/param_curah_hujan.geojson',   style: POLY('#0284c7', '#0369a1') },
+  { key: 'ndvi',          title: 'Parameter: NDVI (Vegetasi)',   file: 'data/param_ndvi.geojson',          style: POLY('#22c55e', '#15803d') },
+  { key: 'lst',           title: 'Parameter: LST (Suhu Permukaan)', file: 'data/param_lst.geojson',        style: POLY('#ef4444', '#b91c1c') },
+  { key: 'aksesibilitas', title: 'Parameter: Aksesibilitas',     file: 'data/param_aksesibilitas.geojson', style: POLY('#eab308', '#a16207') },
+  { key: 'tutupan_lahan', title: 'Parameter: Tutupan Lahan',     file: 'data/param_tutupan_lahan.geojson', style: POLY('#84cc16', '#4d7c0f') },
+
+  // --- Parameter lain (file yang tidak ada akan dilewati otomatis) ---
+  { key: 'cuaca',         title: 'Parameter: Kondisi Cuaca',     file: 'data/param_cuaca.geojson',         style: POLY('#38bdf8', '#0284c7') },
+  { key: 'ndmi',          title: 'Parameter: NDMI (Kelembapan)', file: 'data/param_ndmi.geojson',          style: POLY('#06b6d4', '#0e7490') },
+  { key: 'gambut',        title: 'Parameter: Lahan Gambut',      file: 'data/parameter_gambut.geojson',    style: POLY('#78350f', '#451a03') },
+  { key: 'slope',         title: 'Parameter: Kemiringan Lereng (Slope)', file: 'data/param_slope.geojson', style: POLY('#a855f7', '#7e22ce') },
+  { key: 'kawasan_hutan', title: 'Parameter: Kawasan Hutan',     file: 'data/param_kawasan_hutan.geojson', style: POLY('#14532d', '#052e16') }
+];
+
+// =========================================================================
+// 1. INISIALISASI PETA, PANE (URUTAN TAMPILAN) & BASEMAP
 // =========================================================================
 const map = L.map('map').setView([-1.68, 113.38], 8);
+
+// Urutan dari bawah ke atas: basemap (200) < raster < parameter < bahaya < AOI < titik
+map.createPane('paneRaster').style.zIndex    = 300;
+map.createPane('paneParameter').style.zIndex = 410;
+map.createPane('paneBahaya').style.zIndex    = 420;
+map.createPane('paneAOI').style.zIndex       = 440;
+map.createPane('paneTitik').style.zIndex     = 450;
 
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -18,26 +66,6 @@ const darkMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/
   attribution: '&copy; OpenStreetMap &copy; CARTO'
 });
 
-// setelah variabel map dibuat
-fetch('./data/AOI_Kaltim_PL_Kota.geojson')
-  .then(res => res.json())
-  .then(data => {
-    const aoiLayer = L.geoJSON(data, {
-      style: {
-        color: '#d9480f',
-        weight: 2,
-        fillOpacity: 0.75
-      },
-      onEachFeature: (feature, layer) => {
-        if (feature.properties && feature.properties.nama) {
-          layer.bindPopup(feature.properties.nama);
-        }
-      }
-    }).addTo(map);
-
-    map.fitBounds(aoiLayer.getBounds()); // zoom otomatis ke AOI
-  });
-
 // Skala Peta (Wajib KAK)
 L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
 
@@ -49,7 +77,7 @@ L.control.layers({
 }, {}, { collapsed: true }).addTo(map);
 
 // =========================================================================
-// 2. LOGIKA NAVIGASI 3 SUB-MENU (TAB)
+// 2. LOGIKA NAVIGASI SUB-MENU (TAB)
 // =========================================================================
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -62,13 +90,23 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
     // Perbarui ukuran grafik jika tab statistik dibuka
     if (targetId === 'tab-hasil' && baselineChart) baselineChart.resize();
-    if (targetId === 'tab-simulasi' && simulasiChart) simulasiChart.resize();
   });
 });
 
 // =========================================================================
-// 3. FUNGSI UNIVERSAL POP-UP UNTUK SEMUA DATA VEKTOR
+// 3. FUNGSI UTILITAS & POP-UP UNIVERSAL UNTUK DATA VEKTOR
 // =========================================================================
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function getSliderOpacity(key, fallback) {
+  const el = document.querySelector(`.layer-opacity[data-layer="${key}"]`);
+  const v = el ? parseFloat(el.value) : NaN;
+  return Number.isFinite(v) ? v : fallback;
+}
+
 function createVectorPopup(layerTitle, properties, highlightBadge = null) {
   let rowsHtml = '';
 
@@ -115,23 +153,10 @@ let rawBahayaData = null;
 let totalHotspotCount = 0;
 let baselineRekap = { Rendah: 0, Sedang: 0, Tinggi: 0 };
 let baselineChart = null;
-let simulasiChart = null;
 
-const layersRegistry = {
-  bahaya: L.geoJSON(null),
-  dampak: L.geoJSON(null),
-  curah_hujan: L.geoJSON(null),
-  cuaca: L.geoJSON(null),
-  lst: L.geoJSON(null),
-  ndvi: L.geoJSON(null),
-  ndmi: L.geoJSON(null),
-  tutupan_lahan: L.geoJSON(null),
-  gambut: L.geoJSON(null),
-  slope: L.geoJSON(null),
-  aksesibilitas: L.geoJSON(null),
-  kawasan_hutan: L.geoJSON(null),
-  titik_api: L.geoJSON(null)
-};
+// Registry berisi layer kosong dulu; diganti saat file selesai dimuat
+const layersRegistry = { aoi: L.geoJSON(null), bahaya: L.geoJSON(null) };
+DATA_LAYERS.forEach(cfg => { layersRegistry[cfg.key] = L.geoJSON(null); });
 
 function getColor(kelas) {
   return kelas === 'Tinggi' ? '#dc2626' :
@@ -140,7 +165,7 @@ function getColor(kelas) {
 }
 
 // =========================================================================
-// 5. PERHITUNGAN MODEL BAHAYA (AWAL & SIMULASI ON-THE-FLY)
+// 5. PERHITUNGAN MODEL BAHAYA
 // =========================================================================
 function hitungKelasBahaya(props, weights) {
   const sGambut    = parseFloat(props.skor_gambut ?? props.skor_iklim ?? 3);
@@ -167,19 +192,13 @@ function hitungKelasBahaya(props, weights) {
 function renderBahayaLayer(options = { autoZoom: false, isBaseline: false }) {
   if (!rawBahayaData) return;
 
-  const weights = options.isBaseline
-    ? { gambut: 30, iklim: 25, permukaan: 25, akses: 20 }
-    : {
-        gambut: parseFloat(document.getElementById('w-gambut').value),
-        iklim: parseFloat(document.getElementById('w-iklim').value),
-        permukaan: parseFloat(document.getElementById('w-permukaan').value),
-        akses: parseFloat(document.getElementById('w-akses').value)
-      };
+  // Model awal memakai bobot default; selain itu memakai bobot aktif (diatur simulasi.js)
+  const weights = options.isBaseline ? DEFAULT_WEIGHTS : activeWeights;
 
   const keyword = document.getElementById('search-wilayah').value.toLowerCase().trim();
   const filterKab = document.getElementById('filter-kab').value;
   const filterKelas = document.getElementById('filter-kelas').value;
-  const opacityVal = parseFloat(document.querySelector('.layer-opacity[data-layer="bahaya"]').value);
+  const opacityVal = getSliderOpacity('bahaya', 0.7);
 
   if (map.hasLayer(layersRegistry.bahaya)) {
     map.removeLayer(layersRegistry.bahaya);
@@ -210,6 +229,7 @@ function renderBahayaLayer(options = { autoZoom: false, isBaseline: false }) {
   });
 
   layersRegistry.bahaya = L.geoJSON({ type: 'FeatureCollection', features: filteredFeatures }, {
+    pane: 'paneBahaya',
     style: (feature) => ({
       fillColor: getColor(feature.properties._kelas_dinamis),
       weight: 1,
@@ -228,7 +248,6 @@ function renderBahayaLayer(options = { autoZoom: false, isBaseline: false }) {
         pendudukTinggi += penduduk;
       }
 
-      // Pop-up Atribut Lengkap untuk Poligon Model Bahaya
       const badge = {
         color: getColor(p._kelas_dinamis),
         text: `Kelas Bahaya: ${p._kelas_dinamis} (Skor ${p._skor_dinamis})`
@@ -237,7 +256,7 @@ function renderBahayaLayer(options = { autoZoom: false, isBaseline: false }) {
     }
   });
 
-  // Tampilkan ke peta hanya jika checkbox bahaya dalam posisi aktif (checked)
+  // Tampilkan ke peta hanya jika checkbox bahaya aktif
   const cbBahaya = document.querySelector('.layer-toggle[data-layer="bahaya"]');
   if (cbBahaya && cbBahaya.checked) {
     layersRegistry.bahaya.addTo(map);
@@ -247,42 +266,51 @@ function renderBahayaLayer(options = { autoZoom: false, isBaseline: false }) {
     map.fitBounds(layersRegistry.bahaya.getBounds(), { padding: [30, 30] });
   }
 
-  // Simpan & perbarui statistik Sub-Menu 2 (Baseline) dan Sub-Menu 3 (Simulasi)
   if (options.isBaseline) {
     baselineRekap = { ...rekapLuas };
     updateBaselineStats(rekapLuas, luasTinggi, pendudukTinggi);
   }
-  updateSimulasiStats(rekapLuas, luasTinggi, pendudukTinggi);
+
+  // Kait untuk simulasi.js: dipanggil setiap kali layer bahaya selesai dirender
+  if (typeof window.onBahayaRendered === 'function') {
+    window.onBahayaRendered({
+      rekap: rekapLuas,
+      luasTinggi,
+      pendudukTinggi,
+      isBaseline: !!options.isBaseline
+    });
+  }
 }
 
 // =========================================================================
-// 6. PEMBARUAN STATISTIKAL RASTER & GRAFIK (SUB-MENU 2 & SUB-MENU 3)
+// 6. STATISTIK MODEL AWAL (SUB-MENU 2)
 // =========================================================================
 function updateBaselineStats(rekap, luasTinggi, pendudukTinggi) {
   const totalLuas = rekap.Rendah + rekap.Sedang + rekap.Tinggi;
 
-  document.getElementById('base-luas-total').textContent = `${totalLuas.toLocaleString('id-ID')} Ha`;
-  document.getElementById('base-luas-tinggi').textContent = `${luasTinggi.toLocaleString('id-ID')} Ha`;
-  document.getElementById('base-penduduk').textContent = `${pendudukTinggi.toLocaleString('id-ID')} Jiwa`;
-  document.getElementById('base-hotspot').textContent = `${totalHotspotCount.toLocaleString('id-ID')} Titik`;
+  setText('base-luas-total', `${totalLuas.toLocaleString('id-ID')} Ha`);
+  setText('base-luas-tinggi', `${luasTinggi.toLocaleString('id-ID')} Ha`);
+  setText('base-penduduk', `${pendudukTinggi.toLocaleString('id-ID')} Jiwa`);
+  setText('base-hotspot', `${totalHotspotCount.toLocaleString('id-ID')} Titik`);
 
-  // Isi Tabel Statistik Baseline
   const tbody = document.getElementById('baseline-table-body');
-  tbody.innerHTML = ['Tinggi', 'Sedang', 'Rendah'].map(k => {
-    const persen = totalLuas > 0 ? ((rekap[k] / totalLuas) * 100).toFixed(1) : '0.0';
-    return `
-      <tr>
-        <td><b style="color:${getColor(k)}">${k}</b></td>
-        <td>${rekap[k].toLocaleString('id-ID')}</td>
-        <td>${persen}%</td>
-      </tr>
-    `;
-  }).join('');
+  if (tbody) {
+    tbody.innerHTML = ['Tinggi', 'Sedang', 'Rendah'].map(k => {
+      const persen = totalLuas > 0 ? ((rekap[k] / totalLuas) * 100).toFixed(1) : '0.0';
+      return `
+        <tr>
+          <td><b style="color:${getColor(k)}">${k}</b></td>
+          <td>${rekap[k].toLocaleString('id-ID')}</td>
+          <td>${persen}%</td>
+        </tr>
+      `;
+    }).join('');
+  }
 
-  // Render Grafik Baseline
-  const ctx = document.getElementById('baselineChart').getContext('2d');
+  const canvas = document.getElementById('baselineChart');
+  if (!canvas) return;
   if (baselineChart) baselineChart.destroy();
-  baselineChart = new Chart(ctx, {
+  baselineChart = new Chart(canvas.getContext('2d'), {
     type: 'doughnut',
     data: {
       labels: ['Rendah', 'Sedang', 'Tinggi'],
@@ -301,90 +329,135 @@ function updateBaselineStats(rekap, luasTinggi, pendudukTinggi) {
   });
 }
 
-function updateSimulasiStats(rekapSim, luasTinggiSim, pendudukSim) {
-  const deltaLuas = luasTinggiSim - baselineRekap.Tinggi;
-  const tanda = deltaLuas > 0 ? '+' : '';
+// =========================================================================
+// 7. PEMUATAN DATA: AOI, VEKTOR, RASTER, TILE
+// =========================================================================
 
-  document.getElementById('sim-luas-tinggi').textContent = `${luasTinggiSim.toLocaleString('id-ID')} Ha`;
-  document.getElementById('sim-delta-luas').textContent = `${tanda}${deltaLuas.toLocaleString('id-ID')} Ha`;
-  document.getElementById('sim-penduduk').textContent = `${pendudukSim.toLocaleString('id-ID')} Jiwa`;
+// Ganti layer lama di registry dengan yang baru, lalu tampilkan sesuai status checkbox.
+// defaultOn: dipakai bila tidak ada checkbox untuk layer tersebut di HTML.
+function registerLayer(key, layer, defaultOn = false) {
+  const old = layersRegistry[key];
+  if (old && map.hasLayer(old)) map.removeLayer(old);
 
-  // Tabel Perbandingan Awal vs Simulasi
-  const tbody = document.getElementById('simulasi-table-body');
-  tbody.innerHTML = ['Tinggi', 'Sedang', 'Rendah'].map(k => `
-    <tr>
-      <td><b style="color:${getColor(k)}">${k}</b></td>
-      <td>${baselineRekap[k].toLocaleString('id-ID')}</td>
-      <td>${rekapSim[k].toLocaleString('id-ID')}</td>
-    </tr>
-  `).join('');
+  layersRegistry[key] = layer;
 
-  // Grafik Batang Perbandingan
-  const ctx = document.getElementById('simulasiChart').getContext('2d');
-  if (simulasiChart) simulasiChart.destroy();
-  simulasiChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Rendah', 'Sedang', 'Tinggi'],
-      datasets: [
-        {
-          label: 'Model Awal (Ha)',
-          data: [baselineRekap.Rendah, baselineRekap.Sedang, baselineRekap.Tinggi],
-          backgroundColor: '#64748b'
-        },
-        {
-          label: 'Hasil Simulasi (Ha)',
-          data: [rekapSim.Rendah, rekapSim.Sedang, rekapSim.Tinggi],
-          backgroundColor: ['#16a34a', '#f59e0b', '#dc2626']
-        }
-      ]
-    },
-    options: {
-      plugins: { legend: { labels: { color: '#cbd5e1', font: { size: 11 } } } },
-      scales: {
-        y: { ticks: { color: '#cbd5e1' }, grid: { color: '#334155' } },
-        x: { ticks: { color: '#cbd5e1' }, grid: { display: false } }
-      }
-    }
-  });
+  const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
+  const show = cb ? cb.checked : defaultOn;
+  if (show) layer.addTo(map);
 }
 
-// =========================================================================
-// 7. PEMUATAN SEMUA FILE GEOJSON & POP-UP OTOMATIS
-// =========================================================================
-async function loadVectorLayer(key, title, filePath, styleOptions, isPoint = false) {
+// --- AOI: hanya garis tepi, tidak interaktif agar klik tembus ke layer di bawahnya
+async function loadAOI() {
   try {
-    const res = await fetch(filePath);
-    if (!res.ok) return;
+    const res = await fetch(AOI_FILE);
+    if (!res.ok) {
+      console.warn(`AOI: ${AOI_FILE} tidak ditemukan (${res.status})`);
+      return;
+    }
     const data = await res.json();
 
-    if (key === 'titik_api' && Array.isArray(data.features)) {
-      totalHotspotCount = data.features.length;
-      document.getElementById('base-hotspot').textContent = `${totalHotspotCount.toLocaleString('id-ID')} Titik`;
-    }
-
-    layersRegistry[key] = L.geoJSON(data, {
-      style: isPoint ? undefined : styleOptions,
-      pointToLayer: isPoint ? (f, latlng) => L.circleMarker(latlng, styleOptions) : undefined,
-      onEachFeature: (feature, layer) => {
-        layer.bindPopup(createVectorPopup(title, feature.properties));
-      }
+    const layer = L.geoJSON(data, {
+      pane: 'paneAOI',
+      interactive: false,
+      style: { color: '#d9480f', weight: 2.5, fill: false }
     });
+    registerLayer('aoi', layer, true);
 
-    const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
-    if (cb && cb.checked) {
-      layersRegistry[key].addTo(map);
-    }
+    if (layer.getBounds().isValid()) map.fitBounds(layer.getBounds());
   } catch (err) {
-    console.warn(`Layer ${key} (${filePath}) dilewati:`, err.message);
+    console.warn('AOI dilewati:', err.message);
+  }
+}
+
+// --- Vektor GeoJSON (poligon atau titik)
+async function loadVector(cfg) {
+  const res = await fetch(cfg.file);
+  if (!res.ok) {
+    console.warn(`Layer ${cfg.key}: ${cfg.file} tidak ditemukan (${res.status})`);
+    return;
+  }
+  const data = await res.json();
+
+  if (cfg.key === 'titik_api' && Array.isArray(data.features)) {
+    totalHotspotCount = data.features.length;
+    setText('base-hotspot', `${totalHotspotCount.toLocaleString('id-ID')} Titik`);
+  }
+
+  const style = { ...cfg.style, fillOpacity: getSliderOpacity(cfg.key, cfg.style.fillOpacity) };
+  const pane = cfg.point ? 'paneTitik' : 'paneParameter';
+
+  const layer = L.geoJSON(data, {
+    pane,
+    style: cfg.point ? undefined : style,
+    pointToLayer: cfg.point ? (f, latlng) => L.circleMarker(latlng, { ...style, pane }) : undefined,
+    onEachFeature: (feature, lyr) => {
+      lyr.bindPopup(createVectorPopup(cfg.title, feature.properties));
+    }
+  });
+  registerLayer(cfg.key, layer);
+}
+
+// --- Raster GeoTIFF (butuh georaster + georaster-layer-for-leaflet di index.html)
+async function loadRaster(cfg) {
+  if (typeof parseGeoraster === 'undefined' || typeof GeoRasterLayer === 'undefined') {
+    console.warn(`Layer ${cfg.key}: pustaka georaster belum dimuat di index.html`);
+    return;
+  }
+  const res = await fetch(cfg.file);
+  if (!res.ok) {
+    console.warn(`Layer ${cfg.key}: ${cfg.file} tidak ditemukan (${res.status})`);
+    return;
+  }
+  const georaster = await parseGeoraster(await res.arrayBuffer());
+  const min = georaster.mins[0];
+  const max = georaster.maxs[0];
+
+  const layer = new GeoRasterLayer({
+    georaster,
+    pane: 'paneRaster',
+    opacity: getSliderOpacity(cfg.key, 0.7),
+    resolution: 256,
+    pixelValuesToColorFn: cfg.colorFn || (v => {
+      if (v === null || v === undefined || Number.isNaN(v) || v === georaster.noDataValue) return null;
+      const t = max > min ? (v - min) / (max - min) : 1;
+      return `hsl(${60 - 60 * t}, 100%, 50%)`; // kuning (rendah) -> merah (tinggi)
+    })
+  });
+  registerLayer(cfg.key, layer);
+}
+
+// --- Tile XYZ hasil Generate XYZ Tiles (QGIS)
+function loadTile(cfg) {
+  const layer = L.tileLayer(cfg.file, {
+    pane: 'paneRaster',
+    minZoom: cfg.minZoom ?? 0,
+    maxNativeZoom: cfg.maxZoom ?? 13,
+    maxZoom: 19,
+    tms: !!cfg.tms,
+    opacity: getSliderOpacity(cfg.key, 0.7)
+  });
+  registerLayer(cfg.key, layer);
+}
+
+async function loadLayer(cfg) {
+  try {
+    if (cfg.type === 'raster') return await loadRaster(cfg);
+    if (cfg.type === 'tile') return loadTile(cfg);
+    return await loadVector(cfg);
+  } catch (err) {
+    console.warn(`Layer ${cfg.key} (${cfg.file}) dilewati:`, err.message);
   }
 }
 
 async function initAllData() {
+  // 1. Muat AOI dan semua layer data secara paralel (urutan tampilan diatur oleh pane)
+  await Promise.all([loadAOI(), ...DATA_LAYERS.map(loadLayer)]);
+
+  // 2. Muat model bahaya (dipisah agar kegagalannya tidak menghentikan layer lain)
   try {
-    // 1. Muat Layer Utama Model Bahaya Api
-    const resBahaya = await fetch('data/model_bahaya_api.geojson');
-    rawBahayaData = await resBahaya.json();
+    const res = await fetch(BAHAYA_FILE);
+    if (!res.ok) throw new Error(`${BAHAYA_FILE} tidak ditemukan (${res.status})`);
+    rawBahayaData = await res.json();
 
     const kabSet = new Set(
       rawBahayaData.features
@@ -399,42 +472,10 @@ async function initAllData() {
       selectKab.appendChild(opt);
     });
 
-    // 2. Muat Kejadian Kebakaran (Titik Api) & Analisis Dampak
-    await loadVectorLayer('titik_api', 'Titik Api Historis (Hotspot)', 'data/titik_api_firms.geojson', {
-      radius: 5, fillColor: '#fef08a', color: '#dc2626', weight: 1.5, fillOpacity: 0.9
-    }, true);
-
-    await loadVectorLayer('dampak', 'Objek Analisis Dampak', 'data/dampak_fasilitas.geojson', {
-      radius: 6, fillColor: '#38bdf8', color: '#0369a1', weight: 1.5, fillOpacity: 0.9
-    }, true);
-
-    // 3. Muat Layer Parameter (Iklim, Permukaan, Fisik Wilayah)
-    await loadVectorLayer('curah_hujan', 'Parameter: Curah Hujan', 'data/param_curah_hujan.geojson',
-      { fillColor: '#0284c7', color: '#0369a1', weight: 1, fillOpacity: 0.6 });
-    await loadVectorLayer('cuaca', 'Parameter: Kondisi Cuaca', 'data/param_cuaca.geojson',
-      { fillColor: '#38bdf8', color: '#0284c7', weight: 1, fillOpacity: 0.6 });
-    await loadVectorLayer('lst', 'Parameter: LST (Suhu Permukaan)', 'data/param_lst.geojson',
-      { fillColor: '#ef4444', color: '#b91c1c', weight: 1, fillOpacity: 0.6 });
-    await loadVectorLayer('ndvi', 'Parameter: NDVI (Vegetasi)', 'data/param_ndvi.geojson',
-      { fillColor: '#22c55e', color: '#15803d', weight: 1, fillOpacity: 0.6 });
-    await loadVectorLayer('ndmi', 'Parameter: NDMI (Kelembapan)', 'data/param_ndmi.geojson',
-      { fillColor: '#06b6d4', color: '#0e7490', weight: 1, fillOpacity: 0.6 });
-    await loadVectorLayer('tutupan_lahan', 'Parameter: Tutupan Lahan', 'data/param_tutupan_lahan.geojson',
-      { fillColor: '#84cc16', color: '#4d7c0f', weight: 1, fillOpacity: 0.6 });
-    await loadVectorLayer('gambut', 'Parameter: Lahan Gambut', 'data/parameter_gambut.geojson',
-      { fillColor: '#78350f', color: '#451a03', weight: 1, fillOpacity: 0.6 });
-    await loadVectorLayer('slope', 'Parameter: Kemiringan Lereng (Slope)', 'data/param_slope.geojson',
-      { fillColor: '#a855f7', color: '#7e22ce', weight: 1, fillOpacity: 0.6 });
-    await loadVectorLayer('aksesibilitas', 'Parameter: Aksesibilitas', 'data/param_aksesibilitas.geojson',
-      { fillColor: '#eab308', color: '#a16207', weight: 1, fillOpacity: 0.6 });
-    await loadVectorLayer('kawasan_hutan', 'Parameter: Kawasan Hutan', 'data/param_kawasan_hutan.geojson',
-      { fillColor: '#14532d', color: '#052e16', weight: 1, fillOpacity: 0.6 });
-
     // Render Model Awal & Zoom ke Wilayah Studi
     renderBahayaLayer({ autoZoom: true, isBaseline: true });
-
   } catch (err) {
-    console.error("Gagal memuat data utama. Pastikan dijalankan via Live Server:", err);
+    console.error('Gagal memuat model bahaya. Pastikan dijalankan via Live Server:', err);
   }
 }
 
@@ -450,6 +491,7 @@ legend.onAdd = function () {
     <i style="background:#f59e0b"></i> Sedang (2.3 – 3.4)<br/>
     <i style="background:#16a34a"></i> Rendah (&lt; 2.3)<br/>
     <hr style="margin:5px 0; border-color:#475569"/>
+    <i style="background:transparent; border:2px solid #d9480f"></i> Batas AOI<br/>
     <i style="background:#fef08a; border:1px solid #dc2626; border-radius:50%"></i> Titik Api Historis<br/>
     <i style="background:#38bdf8; border:1px solid #0369a1; border-radius:50%"></i> Fasilitas Terdampak
   `;
@@ -502,25 +544,18 @@ document.getElementById('btn-show-baseline').addEventListener('click', () => {
   renderBahayaLayer({ autoZoom: false, isBaseline: true });
 });
 
-// Event Simulasi Bobot On-the-Fly (Sub-Menu 3)
-['gambut', 'iklim', 'permukaan', 'akses'].forEach(param => {
-  document.getElementById(`w-${param}`).addEventListener('input', (e) => {
-    document.getElementById(`lbl-w-${param}`).textContent = `${e.target.value}%`;
-  });
-});
-
-document.getElementById('btn-recalculate').addEventListener('click', () => {
-  renderBahayaLayer({ autoZoom: false, isBaseline: false });
-});
-
-document.getElementById('btn-reset-bobot').addEventListener('click', () => {
-  const defaults = { gambut: 30, iklim: 25, permukaan: 25, akses: 20 };
-  Object.entries(defaults).forEach(([k, v]) => {
-    document.getElementById(`w-${k}`).value = v;
-    document.getElementById(`lbl-w-${k}`).textContent = `${v}%`;
-  });
-  renderBahayaLayer({ autoZoom: false, isBaseline: false });
-});
+// =========================================================================
+// 9. ANTARMUKA UNTUK SKRIP LAIN (mis. simulasi.js) & START
+// =========================================================================
+window.WebGIS = {
+  map,
+  layersRegistry,
+  DEFAULT_WEIGHTS,
+  getColor,
+  renderBahayaLayer,
+  getBaselineRekap: () => baselineRekap,
+  setBobotAktif: (w) => { activeWeights = { ...DEFAULT_WEIGHTS, ...w }; }
+};
 
 // Jalankan Aplikasi
 initAllData();
