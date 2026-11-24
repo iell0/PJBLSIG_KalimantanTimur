@@ -187,26 +187,6 @@ function getColor(kelas) {
 // =========================================================================
 // 5. PERHITUNGAN MODEL BAHAYA
 // =========================================================================
-// Fungsi sinkronisasi tunggal antara status checkbox dengan layer di peta
-function syncLayerVisibility(key) {
-  const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
-  const targetLayer = layersRegistry[key];
-  if (!cb || !targetLayer) return;
-
-  if (cb.checked) {
-    if (!map.hasLayer(targetLayer)) targetLayer.addTo(map);
-  } else {
-    if (map.hasLayer(targetLayer)) map.removeLayer(targetLayer);
-  }
-}
-
-// Pasang listener pada semua checkbox
-document.querySelectorAll('.layer-toggle').forEach(checkbox => {
-  checkbox.addEventListener('change', (e) => {
-    syncLayerVisibility(e.target.dataset.layer);
-  });
-});
-
 function hitungKelasBahaya(props, weights) {
   const sGambut    = parseFloat(props.skor_gambut ?? props.skor_iklim ?? 3);
   const sIklim     = parseFloat(props.skor_iklim ?? 3);
@@ -302,6 +282,20 @@ function renderBahayaLayer(options = { autoZoom: false, isBaseline: false }) {
     layersRegistry.bahaya.addTo(map);
   }
 
+  function registerLayer(key, layer, defaultOn = false) {
+  const old = layersRegistry[key];
+  if (old && map.hasLayer(old)) map.removeLayer(old);
+
+  layersRegistry[key] = layer;
+
+  const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
+  if (cb) {
+    syncLayerVisibility(key);
+  } else if (defaultOn) {
+    layer.addTo(map);
+  }
+}
+  
   if (options.autoZoom && layersRegistry.bahaya.getBounds().isValid()) {
     map.fitBounds(layersRegistry.bahaya.getBounds(), { padding: [30, 30] });
   }
@@ -422,6 +416,26 @@ async function loadVector(cfg) {
     totalHotspotCount = data.features.length;
     setText('base-hotspot', `${totalHotspotCount.toLocaleString('id-ID')} Titik`);
   }
+  
+  // Fungsi sinkronisasi tunggal antara status checkbox dengan layer di peta
+function syncLayerVisibility(key) {
+  const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
+  const targetLayer = layersRegistry[key];
+  if (!cb || !targetLayer) return;
+
+  if (cb.checked) {
+    if (!map.hasLayer(targetLayer)) targetLayer.addTo(map);
+  } else {
+    if (map.hasLayer(targetLayer)) map.removeLayer(targetLayer);
+  }
+}
+
+// Pasang listener pada semua checkbox
+document.querySelectorAll('.layer-toggle').forEach(checkbox => {
+  checkbox.addEventListener('change', (e) => {
+    syncLayerVisibility(e.target.dataset.layer);
+  });
+});
 
   const style = { ...cfg.style, fillOpacity: getSliderOpacity(cfg.key, cfg.style.fillOpacity) };
   const pane = cfg.point ? 'paneTitik' : 'paneParameter';
