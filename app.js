@@ -1,10 +1,11 @@
 // =========================================================================
 // PELINDUNG EKSEKUSI GANDA (Cegah app.js berjalan lebih dari 1x)
 // =========================================================================
-if (window.__WEBGIS_INITIALIZED__) {
-  throw new Error('app.js sudah dimuat sebelumnya. Menghentikan eksekusi ganda.');
+if (window.__WEBGIS_KARHUTLA_INITIALIZED__) {
+  throw new Error('app.js sudah dijalankan sebelumnya. Menghentikan duplikasi.');
 }
-window.__WEBGIS_INITIALIZED__ = true;
+window.__WEBGIS_KARHUTLA_INITIALIZED__ = true;
+
 // =========================================================================
 // 0. KONFIGURASI DATA (ubah nama file / tipe layer di sini)
 // =========================================================================
@@ -170,6 +171,7 @@ let totalHotspotCount = 0;
 let baselineRekap = { Rendah: 0, Sedang: 0, Tinggi: 0 };
 let baselineChart = null;
 const rasterData = {}; // key -> { georaster, cfg }
+const loadedKeys = new Set();
 
 const layersRegistry = { aoi: L.geoJSON(null), bahaya: L.geoJSON(null) };
 DATA_LAYERS.forEach(cfg => { layersRegistry[cfg.key] = L.geoJSON(null); });
@@ -270,6 +272,7 @@ function renderBahayaLayer(options = { autoZoom: false, isBaseline: false }) {
     }
   });
 
+  loadedKeys.add('bahaya');
   syncLayerVisibility('bahaya');
 
   if (options.autoZoom && layersRegistry.bahaya.getBounds().isValid()) {
@@ -341,8 +344,6 @@ function updateBaselineStats(rekap, luasTinggi, pendudukTinggi) {
 // =========================================================================
 // 7. SINKRONISASI & PEMUATAN DATA: AOI, VEKTOR, RASTER, TILE
 // =========================================================================
-const loadedKeys = new Set();
-
 function syncLayerVisibility(key) {
   const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
   const targetLayer = layersRegistry[key];
@@ -350,7 +351,6 @@ function syncLayerVisibility(key) {
 
   if (cb.checked) {
     if (!map.hasLayer(targetLayer)) targetLayer.addTo(map);
-    // Bawa layer raster yang baru dicentang ke urutan paling atas di paneRaster
     if (typeof targetLayer.bringToFront === 'function') targetLayer.bringToFront();
   } else {
     if (map.hasLayer(targetLayer)) map.removeLayer(targetLayer);
@@ -443,49 +443,6 @@ async function loadRaster(cfg) {
   const max = georaster.maxs[0];
   const ramp = RAMPS[cfg.ramp] || RAMPS.api;
 
-  // Tandai layer mana saja yang datanya benar-benar berhasil dimuat
-const loadedKeys = new Set();
-
-// Perbarui fungsi registerLayer agar mencatat layer yang sukses dimuat
-function registerLayer(key, layer, defaultOn = false) {
-  const old = layersRegistry[key];
-  if (old && map.hasLayer(old)) map.removeLayer(old);
-
-  layersRegistry[key] = layer;
-  loadedKeys.add(key);
-
-  const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
-  if (cb) {
-    syncLayerVisibility(key);
-  } else if (defaultOn) {
-    layer.addTo(map);
-    updateRasterLegend();
-  }
-}
-
-// Kontrol Checkbox: pastikan setiap checkbox terikat eksklusif pada data-layer miliknya
-// Kontrol Checkbox Hidup/Mati Layer (Hanya 1 listener per checkbox)
-document.querySelectorAll('.layer-toggle').forEach(checkbox => {
-  checkbox.addEventListener('change', (e) => {
-    const key = e.target.dataset.layer;
-    console.log(`[Toggle Layer] key="${key}", checked=${e.target.checked}, dataSiap=${loadedKeys.has(key)}`);
-    syncLayerVisibility(key);
-  });
-});
-
-  checkbox.addEventListener('change', (e) => {
-    e.stopPropagation();
-    const key = checkbox.dataset.layer;
-    console.log(`[Toggle Layer] key="${key}", checked=${checkbox.checked}, dataSiap=${loadedKeys.has(key)}`);
-
-    if (!loadedKeys.has(key) && key !== 'bahaya') {
-      console.warn(`Layer "${key}" belum selesai dimuat atau file tidak ditemukan di folder data/.`);
-    }
-
-    syncLayerVisibility(key);
-  });
-});
-  
   const colorFn = cfg.colorFn || (v => {
     if (v === null || v === undefined || Number.isNaN(v) || v === georaster.noDataValue) return null;
     if (cfg.transparentZero && v === 0) return null;
@@ -623,7 +580,9 @@ function updateRasterLegend() {
 // Kontrol Checkbox Hidup/Mati Layer
 document.querySelectorAll('.layer-toggle').forEach(checkbox => {
   checkbox.addEventListener('change', (e) => {
-    syncLayerVisibility(e.target.dataset.layer);
+    const key = e.target.dataset.layer;
+    console.log(`[Toggle Layer] key="${key}", checked=${e.target.checked}, dataSiap=${loadedKeys.has(key)}`);
+    syncLayerVisibility(key);
   });
 });
 
