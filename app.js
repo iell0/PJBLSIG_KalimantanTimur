@@ -1,4 +1,11 @@
 // =========================================================================
+// PELINDUNG EKSEKUSI GANDA (Cegah app.js berjalan lebih dari 1x)
+// =========================================================================
+if (window.__WEBGIS_INITIALIZED__) {
+  throw new Error('app.js sudah dimuat sebelumnya. Menghentikan eksekusi ganda.');
+}
+window.__WEBGIS_INITIALIZED__ = true;
+// =========================================================================
 // 0. KONFIGURASI DATA (ubah nama file / tipe layer di sini)
 // =========================================================================
 const AOI_FILE    = './data/AOI_Kaltim_PL_Kota.geojson';
@@ -334,6 +341,8 @@ function updateBaselineStats(rekap, luasTinggi, pendudukTinggi) {
 // =========================================================================
 // 7. SINKRONISASI & PEMUATAN DATA: AOI, VEKTOR, RASTER, TILE
 // =========================================================================
+const loadedKeys = new Set();
+
 function syncLayerVisibility(key) {
   const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
   const targetLayer = layersRegistry[key];
@@ -341,6 +350,8 @@ function syncLayerVisibility(key) {
 
   if (cb.checked) {
     if (!map.hasLayer(targetLayer)) targetLayer.addTo(map);
+    // Bawa layer raster yang baru dicentang ke urutan paling atas di paneRaster
+    if (typeof targetLayer.bringToFront === 'function') targetLayer.bringToFront();
   } else {
     if (map.hasLayer(targetLayer)) map.removeLayer(targetLayer);
   }
@@ -353,6 +364,7 @@ function registerLayer(key, layer, defaultOn = false) {
   if (old && map.hasLayer(old)) map.removeLayer(old);
 
   layersRegistry[key] = layer;
+  loadedKeys.add(key);
 
   const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
   if (cb) {
@@ -452,9 +464,14 @@ function registerLayer(key, layer, defaultOn = false) {
 }
 
 // Kontrol Checkbox: pastikan setiap checkbox terikat eksklusif pada data-layer miliknya
-document.querySelectorAll('.layer-item').forEach(item => {
-  const checkbox = item.querySelector('.layer-toggle');
-  if (!checkbox) return;
+// Kontrol Checkbox Hidup/Mati Layer (Hanya 1 listener per checkbox)
+document.querySelectorAll('.layer-toggle').forEach(checkbox => {
+  checkbox.addEventListener('change', (e) => {
+    const key = e.target.dataset.layer;
+    console.log(`[Toggle Layer] key="${key}", checked=${e.target.checked}, dataSiap=${loadedKeys.has(key)}`);
+    syncLayerVisibility(key);
+  });
+});
 
   checkbox.addEventListener('change', (e) => {
     e.stopPropagation();
