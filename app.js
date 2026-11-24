@@ -41,7 +41,7 @@ const DATA_LAYERS = [
   { key: 'ndvi',          title: 'NDVI',            file: './data/ndvi.tif',          type: 'raster', ramp: 'ndvi' },
   { key: 'lst',           title: 'LST',             file: './data/lst.tif',           type: 'raster', ramp: 'suhu', unit: '°C' },
   { key: 'aksesibilitas', title: 'Aksesibilitas',   file: './data/aksesibilitas.tif', type: 'raster', ramp: 'akses' },
-  { key: 'kerapatan_api', title: 'Kerapatan Api',   file: './data/Clipped_Skor_KDE_Hotspot_1_5_Kaltim_2015_2022.tif', type: 'raster', ramp: 'api', transparentZero: true },
+  { key: 'kerapatan_api', title: 'Kerapatan Api',   file: './data/kerapatan_KDE.tif', type: 'raster', ramp: 'api', transparentZero: true },
   { key: 'tutupan_lahan', title: 'Tutupan Lahan',   file: './data/tutupan_lahan.tif', type: 'raster', categorical: true,
     // SESUAIKAN kode kelas dengan nilai piksel pada raster tutupan lahanmu
     classes: {
