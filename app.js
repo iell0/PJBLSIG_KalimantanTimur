@@ -431,6 +431,44 @@ async function loadRaster(cfg) {
   const max = georaster.maxs[0];
   const ramp = RAMPS[cfg.ramp] || RAMPS.api;
 
+  // Tandai layer mana saja yang datanya benar-benar berhasil dimuat
+const loadedKeys = new Set();
+
+// Perbarui fungsi registerLayer agar mencatat layer yang sukses dimuat
+function registerLayer(key, layer, defaultOn = false) {
+  const old = layersRegistry[key];
+  if (old && map.hasLayer(old)) map.removeLayer(old);
+
+  layersRegistry[key] = layer;
+  loadedKeys.add(key);
+
+  const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
+  if (cb) {
+    syncLayerVisibility(key);
+  } else if (defaultOn) {
+    layer.addTo(map);
+    updateRasterLegend();
+  }
+}
+
+// Kontrol Checkbox: pastikan setiap checkbox terikat eksklusif pada data-layer miliknya
+document.querySelectorAll('.layer-item').forEach(item => {
+  const checkbox = item.querySelector('.layer-toggle');
+  if (!checkbox) return;
+
+  checkbox.addEventListener('change', (e) => {
+    e.stopPropagation();
+    const key = checkbox.dataset.layer;
+    console.log(`[Toggle Layer] key="${key}", checked=${checkbox.checked}, dataSiap=${loadedKeys.has(key)}`);
+
+    if (!loadedKeys.has(key) && key !== 'bahaya') {
+      console.warn(`Layer "${key}" belum selesai dimuat atau file tidak ditemukan di folder data/.`);
+    }
+
+    syncLayerVisibility(key);
+  });
+});
+  
   const colorFn = cfg.colorFn || (v => {
     if (v === null || v === undefined || Number.isNaN(v) || v === georaster.noDataValue) return null;
     if (cfg.transparentZero && v === 0) return null;
