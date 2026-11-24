@@ -187,6 +187,26 @@ function getColor(kelas) {
 // =========================================================================
 // 5. PERHITUNGAN MODEL BAHAYA
 // =========================================================================
+// Fungsi sinkronisasi tunggal antara status checkbox dengan layer di peta
+function syncLayerVisibility(key) {
+  const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
+  const targetLayer = layersRegistry[key];
+  if (!cb || !targetLayer) return;
+
+  if (cb.checked) {
+    if (!map.hasLayer(targetLayer)) targetLayer.addTo(map);
+  } else {
+    if (map.hasLayer(targetLayer)) map.removeLayer(targetLayer);
+  }
+}
+
+// Pasang listener pada semua checkbox
+document.querySelectorAll('.layer-toggle').forEach(checkbox => {
+  checkbox.addEventListener('change', (e) => {
+    syncLayerVisibility(e.target.dataset.layer);
+  });
+});
+
 function hitungKelasBahaya(props, weights) {
   const sGambut    = parseFloat(props.skor_gambut ?? props.skor_iklim ?? 3);
   const sIklim     = parseFloat(props.skor_iklim ?? 3);
