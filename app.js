@@ -10,6 +10,17 @@ let activeWeights = { ...DEFAULT_WEIGHTS };
 
 const POLY = (fill, line) => ({ fillColor: fill, color: line, weight: 1, fillOpacity: 0.6 });
 
+// Skala warna raster kontinu: t = 0 (nilai min) ... 1 (nilai max)
+const RAMPS = {
+  hujan: t => `hsl(205, 85%, ${88 - 53 * t}%)`,            // biru muda -> biru tua
+  ndvi:  t => `hsl(${40 + 80 * t}, 70%, ${65 - 25 * t}%)`, // cokelat/kuning -> hijau tua
+  suhu:  t => `hsl(${220 - 220 * t}, 85%, 50%)`,           // biru -> merah
+  akses: t => `hsl(48, 95%, ${90 - 50 * t}%)`,             // kuning muda -> kuning tua
+  api:   t => `hsl(${60 - 60 * t}, 100%, 50%)`             // kuning -> merah
+};
+// Warna cadangan untuk raster kategori yang kelasnya belum didefinisikan
+const CAT_PALETTE = ['#14532d', '#65a30d', '#facc15', '#f97316', '#dc2626', '#38bdf8', '#a855f7', '#78350f'];
+
 // type: 'vector' (GeoJSON, default) | 'raster' (GeoTIFF, butuh georaster) | 'tile' (XYZ)
 // point: true  -> ditampilkan sebagai circleMarker
 //
@@ -24,15 +35,24 @@ const DATA_LAYERS = [
   { key: 'dampak', title: 'Objek Analisis Dampak', file: 'data/dampak_fasilitas.geojson', point: true,
     style: { radius: 6, fillColor: '#38bdf8', color: '#0369a1', weight: 1.5, fillOpacity: 0.9 } },
 
-  // --- Parameter ---
-  { key: 'curah_hujan',   title: 'Parameter: Curah Hujan',       file: 'data/param_curah_hujan.geojson',   style: POLY('#0284c7', '#0369a1') },
-  { key: 'ndvi',          title: 'Parameter: NDVI (Vegetasi)',   file: 'data/param_ndvi.geojson',          style: POLY('#22c55e', '#15803d') },
-  { key: 'lst',           title: 'Parameter: LST (Suhu Permukaan)', file: 'data/param_lst.geojson',        style: POLY('#ef4444', '#b91c1c') },
-  { key: 'aksesibilitas', title: 'Parameter: Aksesibilitas',     file: 'data/param_aksesibilitas.geojson', style: POLY('#eab308', '#a16207') },
-  { key: 'tutupan_lahan', title: 'Parameter: Tutupan Lahan',     file: 'data/param_tutupan_lahan.geojson', style: POLY('#84cc16', '#4d7c0f') },
+  // --- Parameter raster (GeoTIFF, CRS EPSG:4326) ---
+  { key: 'curah_hujan',   title: 'Curah Hujan',     file: 'data/curah_hujan.tif',   type: 'raster', ramp: 'hujan', unit: 'mm' },
+  { key: 'cuaca',         title: 'Parameter Hujan', file: 'data/param_hujan.tif',   type: 'raster', ramp: 'hujan' },
+  { key: 'ndvi',          title: 'NDVI',            file: 'data/ndvi.tif',          type: 'raster', ramp: 'ndvi' },
+  { key: 'lst',           title: 'LST',             file: 'data/lst.tif',           type: 'raster', ramp: 'suhu', unit: '°C' },
+  { key: 'aksesibilitas', title: 'Aksesibilitas',   file: 'data/aksesibilitas.tif', type: 'raster', ramp: 'akses' },
+  { key: 'kerapatan_api', title: 'Kerapatan Api',   file: 'data/kerapatan_api.tif', type: 'raster', ramp: 'api', transparentZero: true },
+  { key: 'tutupan_lahan', title: 'Tutupan Lahan',   file: 'data/tutupan_lahan.tif', type: 'raster', categorical: true,
+    // SESUAIKAN kode kelas dengan nilai piksel pada raster tutupan lahanmu
+    classes: {
+      1: { label: 'Hutan',          color: '#14532d' },
+      2: { label: 'Semak/Belukar',  color: '#65a30d' },
+      3: { label: 'Pertanian',      color: '#facc15' },
+      4: { label: 'Permukiman',     color: '#dc2626' },
+      5: { label: 'Badan Air',      color: '#38bdf8' }
+    } },
 
-  // --- Parameter lain (file yang tidak ada akan dilewati otomatis) ---
-  { key: 'cuaca',         title: 'Parameter: Kondisi Cuaca',     file: 'data/param_cuaca.geojson',         style: POLY('#38bdf8', '#0284c7') },
+  // --- Parameter lain (masih GeoJSON; file yang tidak ada dilewati otomatis) ---
   { key: 'ndmi',          title: 'Parameter: NDMI (Kelembapan)', file: 'data/param_ndmi.geojson',          style: POLY('#06b6d4', '#0e7490') },
   { key: 'gambut',        title: 'Parameter: Lahan Gambut',      file: 'data/parameter_gambut.geojson',    style: POLY('#78350f', '#451a03') },
   { key: 'slope',         title: 'Parameter: Kemiringan Lereng (Slope)', file: 'data/param_slope.geojson', style: POLY('#a855f7', '#7e22ce') },
@@ -398,6 +418,8 @@ async function loadVector(cfg) {
 }
 
 // --- Raster GeoTIFF (butuh georaster + georaster-layer-for-leaflet di index.html)
+const rasterData = {}; // key -> { georaster, cfg }, dipakai untuk klik-baca nilai piksel
+
 async function loadRaster(cfg) {
   if (typeof parseGeoraster === 'undefined' || typeof GeoRasterLayer === 'undefined') {
     console.warn(`Layer ${cfg.key}: pustaka georaster belum dimuat di index.html`);
@@ -409,20 +431,37 @@ async function loadRaster(cfg) {
     return;
   }
   const georaster = await parseGeoraster(await res.arrayBuffer());
+  if (georaster.projection !== 4326) {
+    console.warn(`Layer ${cfg.key}: CRS raster ${georaster.projection}, sebaiknya reproyeksi ke EPSG:4326`);
+  }
+
   const min = georaster.mins[0];
   const max = georaster.maxs[0];
+  const ramp = RAMPS[cfg.ramp] || RAMPS.api;
+
+  const colorFn = cfg.colorFn || (v => {
+    if (v === null || v === undefined || Number.isNaN(v) || v === georaster.noDataValue) return null;
+    if (cfg.transparentZero && v === 0) return null;
+
+    if (cfg.categorical || cfg.classes) {
+      const kelas = cfg.classes && cfg.classes[v];
+      if (kelas) return kelas.color;
+      return cfg.classes ? null : CAT_PALETTE[Math.abs(Math.round(v)) % CAT_PALETTE.length];
+    }
+
+    const t = max > min ? (v - min) / (max - min) : 1;
+    return ramp(Math.min(1, Math.max(0, t)));
+  });
 
   const layer = new GeoRasterLayer({
     georaster,
     pane: 'paneRaster',
     opacity: getSliderOpacity(cfg.key, 0.7),
     resolution: 256,
-    pixelValuesToColorFn: cfg.colorFn || (v => {
-      if (v === null || v === undefined || Number.isNaN(v) || v === georaster.noDataValue) return null;
-      const t = max > min ? (v - min) / (max - min) : 1;
-      return `hsl(${60 - 60 * t}, 100%, 50%)`; // kuning (rendah) -> merah (tinggi)
-    })
+    pixelValuesToColorFn: colorFn
   });
+
+  rasterData[cfg.key] = { georaster, cfg };
   registerLayer(cfg.key, layer);
 }
 
@@ -547,6 +586,51 @@ document.getElementById('btn-show-baseline').addEventListener('click', () => {
 // =========================================================================
 // 9. ANTARMUKA UNTUK SKRIP LAIN (mis. simulasi.js) & START
 // =========================================================================
+// =========================================================================
+// 8b. KLIK PETA: BACA NILAI PIKSEL RASTER YANG SEDANG TAMPIL
+// =========================================================================
+function nilaiRasterDi(georaster, latlng) {
+  if (georaster.projection !== 4326) return null;
+  const col = Math.floor((latlng.lng - georaster.xmin) / georaster.pixelWidth);
+  const row = Math.floor((georaster.ymax - latlng.lat) / georaster.pixelHeight);
+  if (col < 0 || row < 0 || col >= georaster.width || row >= georaster.height) return null;
+
+  const v = georaster.values[0][row][col];
+  if (v === null || v === undefined || Number.isNaN(v) || v === georaster.noDataValue) return null;
+  return v;
+}
+
+map.on('click', (e) => {
+  // Biarkan pop-up fitur vektor bekerja seperti biasa
+  const target = e.originalEvent && e.originalEvent.target;
+  if (target && target.classList && target.classList.contains('leaflet-interactive')) return;
+
+  const baris = [];
+  Object.entries(rasterData).forEach(([key, { georaster, cfg }]) => {
+    if (!map.hasLayer(layersRegistry[key])) return;
+    const v = nilaiRasterDi(georaster, e.latlng);
+    if (v === null) return;
+    if (cfg.transparentZero && v === 0) return;
+
+    const kelas = cfg.classes && cfg.classes[v];
+    const teks = kelas ? kelas.label
+      : (Number.isInteger(v) ? v.toLocaleString('id-ID') : v.toFixed(3)) + (cfg.unit ? ' ' + cfg.unit : '');
+    baris.push(`<tr><td class="popup-attr-key">${cfg.title}</td><td class="popup-attr-val">${teks}</td></tr>`);
+  });
+  if (baris.length === 0) return;
+
+  L.popup()
+    .setLatLng(e.latlng)
+    .setContent(`
+      <div class="popup-wrapper">
+        <div class="popup-header">Nilai Raster</div>
+        <div class="popup-table-scroll">
+          <table class="popup-attr-table"><tbody>${baris.join('')}</tbody></table>
+        </div>
+      </div>`)
+    .openOn(map);
+});
+
 window.WebGIS = {
   map,
   layersRegistry,
