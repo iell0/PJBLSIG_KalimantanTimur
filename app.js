@@ -19,7 +19,7 @@ const darkMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/
 });
 
 // setelah variabel map dibuat
-fetch('data/AOI_Kaltim_PL_Kota.geojson')
+fetch('./data/AOI_Kaltim_PL_Kota.geojson')
   .then(res => res.json())
   .then(data => {
     const aoiLayer = L.geoJSON(data, {
