@@ -39,7 +39,7 @@ const DATA_LAYERS = [
   { key: 'curah_hujan',   title: 'Curah Hujan',     file: './data/Curah Hujan 2015-20221.tif',   type: 'raster', ramp: 'hujan', unit: 'mm' },
   { key: 'cuaca',         title: 'Parameter Hujan', file: './data/PARAMETER CUACA 2015-20221.tif',   type: 'raster', ramp: 'hujan' },
   { key: 'ndvi',          title: 'NDVI',            file: './data/ndvi.tif',          type: 'raster', ramp: 'ndvi' },
-  { key: 'lst',           title: 'LST',             file: './data/lst.tif',           type: 'raster', ramp: 'suhu', unit: '°C' },
+  { key: 'lst',           title: 'LST',             file: './data/LST_Gabungan_Kaltim_2015_2022',           type: 'raster', ramp: 'suhu', unit: '°C' },
   { key: 'aksesibilitas', title: 'Aksesibilitas',   file: './data/aksesibilitas.tif', type: 'raster', ramp: 'akses' },
   { key: 'kerapatan_api', title: 'Kerapatan Api',   file: './data/kerapatan_KDE.tif', type: 'raster', ramp: 'api', transparentZero: true },
   { key: 'tutupan_lahan', title: 'Tutupan Lahan',   file: './data/tutupan_lahan.tif', type: 'raster', categorical: true,
