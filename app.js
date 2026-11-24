@@ -66,7 +66,7 @@ const DATA_LAYERS = [
 const map = L.map('map').setView([-1.68, 113.38], 8);
 
 // Urutan dari bawah ke atas: basemap (200) < raster < parameter < bahaya < AOI < titik
-map.createPane('paneRaster').style.zIndex    = 300;
+map.createPane('paneRaster').style.zIndex    = 430;
 map.createPane('paneParameter').style.zIndex = 410;
 map.createPane('paneBahaya').style.zIndex    = 420;
 map.createPane('paneAOI').style.zIndex       = 440;
@@ -344,31 +344,48 @@ function updateBaselineStats(rekap, luasTinggi, pendudukTinggi) {
 // =========================================================================
 // 7. SINKRONISASI & PEMUATAN DATA: AOI, VEKTOR, RASTER, TILE
 // =========================================================================
-function syncLayerVisibility(key) {
-  const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
-  const targetLayer = layersRegistry[key];
-  if (!cb || !targetLayer) return;
+const MODE_RASTER_TUNGGAL = true; // true: mencentang satu raster otomatis mematikan raster lain
+const RASTER_KEYS = DATA_LAYERS.filter(c => c.type === 'raster' || c.type === 'tile').map(c => c.key);
 
-  if (cb.checked) {
-    if (!map.hasLayer(targetLayer)) {
-      targetLayer.addTo(map);
-    }
-    if (typeof targetLayer.bringToFront === 'function') {
-      targetLayer.bringToFront();
-    }
-  } else {
-    if (map.hasLayer(targetLayer)) {
-      map.removeLayer(targetLayer);
-    }
-    // Paksa hapus container DOM jika GeoRasterLayer masih menyisakan canvas
-    if (targetLayer._container && targetLayer._container.parentNode) {
-      targetLayer._container.parentNode.removeChild(targetLayer._container);
-    }
-  }
+// Buang raster "yatim": layer/canvas raster yang masih menempel padahal bukan layer aktif
+function sapuRasterYatim() {
+  const aktif = new Set();
+  RASTER_KEYS.forEach(k => {
+    const cb = document.querySelector(`.layer-toggle[data-layer="${k}"]`);
+    if (cb && cb.checked && layersRegistry[k]) aktif.add(layersRegistry[k]);
+  });
 
-  updateRasterLegend();
+  // 1) layer raster di peta yang bukan layer aktif -> lepas
+  map.eachLayer(l => {
+    if (l.__rasterKey && !aktif.has(l)) map.removeLayer(l);
+  });
+
+  // 2) elemen DOM sisa di pane raster/tile yang bukan milik layer sah -> buang
+  const sah = new Set();
+  [osm, satelit, darkMap, ...aktif].forEach(l => {
+    const c = map.hasLayer(l) && l.getContainer && l.getContainer();
+    if (c) sah.add(c);
+  });
+  ['paneRaster', 'tilePane'].forEach(nama => {
+    Array.from(map.getPane(nama).children).forEach(el => { if (!sah.has(el)) el.remove(); });
+  });
 }
 
+function syncLayerVisibility(key) {
+  const cb = document.querySelector(`.layer-toggle[data-layer="${key}"]`);
+  const layer = layersRegistry[key];
+  if (!cb || !layer) return;
+
+  if (cb.checked) {
+    if (!map.hasLayer(layer)) layer.addTo(map);
+    if (!rasterData[key] && typeof layer.bringToFront === 'function') layer.bringToFront();
+  } else if (map.hasLayer(layer)) {
+    map.removeLayer(layer);
+  }
+
+  if (RASTER_KEYS.includes(key)) sapuRasterYatim();
+  updateRasterLegend();
+}
 function registerLayer(key, layer, defaultOn = false) {
   const old = layersRegistry[key];
   if (old && map.hasLayer(old)) map.removeLayer(old);
@@ -591,11 +608,17 @@ function updateRasterLegend() {
 document.querySelectorAll('.layer-toggle').forEach(checkbox => {
   checkbox.addEventListener('change', (e) => {
     const key = e.target.dataset.layer;
-    console.log(`[Toggle Layer] key="${key}", checked=${e.target.checked}, dataSiap=${loadedKeys.has(key)}`);
+
+    // Mode tunggal: raster baru menggantikan raster yang sedang tampil
+    if (MODE_RASTER_TUNGGAL && e.target.checked && RASTER_KEYS.includes(key)) {
+      RASTER_KEYS.filter(k => k !== key).forEach(k => {
+        const lain = document.querySelector(`.layer-toggle[data-layer="${k}"]`);
+        if (lain && lain.checked) { lain.checked = false; syncLayerVisibility(k); }
+      });
+    }
     syncLayerVisibility(key);
   });
 });
-
 // Kontrol Slider Transparansi Layer
 document.querySelectorAll('.layer-opacity').forEach(slider => {
   slider.addEventListener('input', (e) => {
