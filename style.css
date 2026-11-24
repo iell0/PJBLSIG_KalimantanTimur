@@ -1,0 +1,383 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 390px;
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-right: 1px solid #334155;
+}
+
+.sidebar-header h1 {
+  font-size: 1.15rem;
+  color: #f97316;
+}
+
+.sidebar-header p {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+/* Navigasi 3 Sub-Menu (Tab) */
+.sub-menu-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  background: #0f172a;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.tab-btn {
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  padding: 8px 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #f8fafc;
+  background: #1e293b;
+}
+
+.tab-btn.active {
+  background: #ea580c;
+  color: #ffffff;
+}
+
+.tab-content {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tab-content.active {
+  display: flex;
+}
+
+/* Panel Box */
+.panel-box {
+  background: #0f172a;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.panel-box h3 {
+  font-size: 0.88rem;
+  margin-bottom: 10px;
+  color: #e2e8f0;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 5px;
+}
+
+.info-text {
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.formula-box {
+  background: #1e293b;
+  border-left: 3px solid #f97316;
+  padding: 8px;
+  font-size: 0.75rem;
+  font-family: Consolas, monospace;
+  color: #fb923c;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+/* Form Inputs */
+label {
+  display: block;
+  font-size: 0.78rem;
+  margin: 6px 0 4px;
+  color: #cbd5e1;
+}
+
+select,
+input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: #1e293b;
+  color: #fff;
+  border: 1px solid #475569;
+  font-size: 0.82rem;
+}
+
+/* Kontrol Layer & Checkbox */
+.layer-group {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #334155;
+}
+
+.layer-group:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.group-title {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+}
+
+.layer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.79rem;
+  color: #e2e8f0;
+  cursor: pointer;
+  flex: 1;
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: #f97316;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.layer-opacity {
+  width: 75px;
+  accent-color: #f97316;
+  cursor: pointer;
+}
+
+/* Sliders & Buttons */
+.slider-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.79rem;
+  margin: 8px 0;
+}
+
+.slider-row input[type="range"] {
+  width: 42%;
+  accent-color: #f97316;
+}
+
+.btn-group {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 8px;
+  background: #ea580c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.btn-primary:hover {
+  background: #c2410c;
+}
+
+.btn-secondary {
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  background: #334155;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.btn-group .btn-secondary {
+  margin-top: 0;
+}
+
+.btn-secondary:hover {
+  background: #475569;
+}
+
+/* Statistik Cards & Tables */
+.stat-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat-card {
+  background: #1e293b;
+  padding: 8px;
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid #334155;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.69rem;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.stat-card strong {
+  font-size: 0.9rem;
+  color: #fb923c;
+}
+
+.stat-card strong.text-danger {
+  color: #f87171;
+}
+
+.stat-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 0.76rem;
+}
+
+.stat-table th,
+.stat-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #334155;
+  text-align: left;
+}
+
+.stat-table th {
+  background: #1e293b;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* Map, Legend & Universal Vector Pop-up */
+#map {
+  flex: 1;
+  height: 100%;
+}
+
+.legend {
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 6px;
+  line-height: 1.55;
+  font-size: 0.78rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  border: 1px solid #334155;
+}
+
+.legend i {
+  width: 13px;
+  height: 13px;
+  float: left;
+  margin-right: 8px;
+  margin-top: 3px;
+  border-radius: 2px;
+}
+
+/* Styling Tabel di Dalam Pop-up Leaflet */
+.popup-wrapper {
+  min-width: 220px;
+  max-width: 290px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.popup-header {
+  background: #0f172a;
+  color: #f97316;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  border-radius: 4px 4px 0 0;
+  margin-bottom: 6px;
+}
+
+.popup-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  margin-bottom: 6px;
+}
+
+.popup-table-scroll {
+  max-height: 190px;
+  overflow-y: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+}
+
+.popup-attr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.popup-attr-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+.popup-attr-table tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.popup-attr-key {
+  font-weight: 600;
+  color: #334155;
+  width: 42%;
+  text-transform: capitalize;
+}
+
+.popup-attr-val {
+  color: #0f172a;
+  word-break: break-word;
+}
