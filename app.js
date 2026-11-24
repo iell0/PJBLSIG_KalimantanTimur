@@ -350,10 +350,20 @@ function syncLayerVisibility(key) {
   if (!cb || !targetLayer) return;
 
   if (cb.checked) {
-    if (!map.hasLayer(targetLayer)) targetLayer.addTo(map);
-    if (typeof targetLayer.bringToFront === 'function') targetLayer.bringToFront();
+    if (!map.hasLayer(targetLayer)) {
+      targetLayer.addTo(map);
+    }
+    if (typeof targetLayer.bringToFront === 'function') {
+      targetLayer.bringToFront();
+    }
   } else {
-    if (map.hasLayer(targetLayer)) map.removeLayer(targetLayer);
+    if (map.hasLayer(targetLayer)) {
+      map.removeLayer(targetLayer);
+    }
+    // Paksa hapus container DOM jika GeoRasterLayer masih menyisakan canvas
+    if (targetLayer._container && targetLayer._container.parentNode) {
+      targetLayer._container.parentNode.removeChild(targetLayer._container);
+    }
   }
 
   updateRasterLegend();
@@ -459,7 +469,7 @@ async function loadRaster(cfg) {
 
   const layer = new GeoRasterLayer({
     georaster,
-    pane: 'paneRaster',
+    zIndex: 250, // Di atas basemap (200), di bawah overlay vektor (400)
     opacity: getSliderOpacity(cfg.key, 0.7),
     resolution: 256,
     pixelValuesToColorFn: colorFn
