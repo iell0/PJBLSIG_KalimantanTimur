@@ -251,7 +251,7 @@
   }
 
   function renderGridNilai(l) {
-    const lap = nilaiLapis(l);
+    const lap = S.lapis[l.slot];
     if (!lap) return null;
     if (l.kategorikal || (lap.kategori && lap.jenis === 'vektor')) {
       const url = gambarGrid(i => {
