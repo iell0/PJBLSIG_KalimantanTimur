@@ -27,6 +27,13 @@
       const x = h.replace('#', '');
       return (cache[h] = [parseInt(x.slice(0, 2), 16), parseInt(x.slice(2, 4), 16), parseInt(x.slice(4, 6), 16)]);
     };
+    const WARNA_TUTUPAN = {
+      1: '#3288bd', // Badan Air
+      2: '#a6d96a', // Area Non Vegetasi
+      3: '#ffffbf', // Hutan
+      4: '#fd7d00', // Pertanian
+      5: '#dc1010'  // Formasi Alami Non Hutan
+    };
   })();
   function warnaRamp(stops, t) {
     t = Math.max(0, Math.min(1, t));
@@ -235,13 +242,9 @@
   };
 
   /* -------------------------------------- perenderan per layer */
-  function nilaiLapis(l) { return S.lapis[l.slot]; }
   function warnaKategoriTutupan(v) {
-    const p = KW.cariParameter('tutupan_lahan');
     const kode = Math.round(v);
-    const keys = p && p.label ? Object.keys(p.label).map(Number) : [];
-    const i = keys.indexOf(kode);
-    return KATEGORI_WARNA[(i >= 0 ? i : kode) % KATEGORI_WARNA.length];
+    return WARNA_TUTUPAN[kode] || '#9ca3af';
   }
 
   function renderGridNilai(l) {
