@@ -98,7 +98,6 @@
     { id: 'p_tutupan_lahan', grup: 'parameter', nama: 'Tutupan lahan', slot: 'tutupan_lahan', param: 'tutupan_lahan', kategorikal: true },
     { id: 'p_gambut', grup: 'parameter', nama: 'Lahan gambut', slot: 'gambut', param: 'gambut' },
     { id: 'p_slope', grup: 'parameter', nama: 'Kemiringan lereng', slot: 'slope', param: 'slope', ramp: 'netral' },
-    { id: 'p_kanal', grup: 'parameter', nama: 'Kanal / drainase', slot: 'kanal', param: 'kanal', ramp: 'akses', satuan: 'km' },
     { id: 'p_aksesibilitas', grup: 'parameter', nama: 'Aksesibilitas (jalan/sungai/permukiman)', slot: 'aksesibilitas', param: 'aksesibilitas', ramp: 'akses' },
     { id: 'p_kawasan_hutan', grup: 'parameter', nama: 'Kawasan hutan / konsesi', slot: 'kawasan_hutan', param: 'kawasan_hutan' },
     { id: 'p_kerapatan_input', grup: 'parameter', nama: 'Kerapatan titik api (masukan model)', slot: '_kerapatan', param: 'kerapatan', ramp: 'kerapatan', satuan: 'titik/km²' },
