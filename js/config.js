@@ -136,9 +136,6 @@ window.KARHUTLA_CONFIG = {
           { id: 'aksesibilitas', nama: 'Aksesibilitas', slot: 'aksesibilitas', bobot: 1,
             aturan: { metode: 'otomatis', arah: 'turun' },
             catatan: '[ASUMSI] nilai = jarak; makin dekat jalan/sungai/permukiman makin bahaya (Frigia, 2024 di proposal)' },
-          { id: 'kanal', nama: 'Kanal / drainase (jarak)', slot: 'kanal', bobot: 1,
-            aturan: { metode: 'kuantil', arah: 'turun' },
-            catatan: 'Data garis diubah menjadi jarak Euclidean (km); makin dekat kanal makin bahaya (Ramdani dkk., 2026 di proposal)' },
           { id: 'kawasan_hutan', nama: 'Kawasan hutan / konsesi', slot: 'kawasan_hutan', bobot: 1,
             aturan: { metode: 'otomatis', arah: 'naik', skorDiLuar: null, skorKategoriLain: 3,
               // [ASUMSI] dipakai hanya bila atribut berupa teks fungsi kawasan; urutan pola menentukan
