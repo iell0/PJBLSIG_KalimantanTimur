@@ -77,7 +77,7 @@ window.KARHUTLA_CONFIG = {
     ndvi:           { label: 'NDVI', jenis: 'raster', file: 'data/ndvi.tif' },
     ndmi:           { label: 'NDMI', jenis: 'vektor', file: 'data/param_ndmi.geojson', field: 'auto' },
     lst:            { label: 'LST siang (MODIS Terra + Aqua)', jenis: 'raster', file: 'data/LST_Gabungan_Kaltim_2015_2022.tif', satuan: '°C' },
-    tutupan_lahan:  { label: 'Tutupan lahan', jenis: 'raster', file: 'data/tutupanlahan_2.tif', kategorikal: true },
+    tutupan_lahan:  { label: 'Tutupan lahan', jenis: 'raster', file: 'data/tutlah_2.tif', kategorikal: true },
     gambut:         { label: 'Lahan gambut / KHG', jenis: 'raster', file: 'data/gambut_2.tif', field: 'auto' },
     slope:          { label: 'Kemiringan lereng', jenis: 'raster', file: 'data/SLOPE_1.tif', field: 'auto' },
     aksesibilitas:  { label: 'Aksesibilitas (jarak jalan/sungai/permukiman)', jenis: 'raster', file: 'data/akses_2.tif' },
