@@ -75,7 +75,7 @@ window.KARHUTLA_CONFIG = {
     cuaca:          { label: 'Parameter cuaca & kekeringan (KBDI/SPI/HTH/DC)', jenis: 'raster', file: 'data/PARAMETER CUACA 2015-20221.tif' },
     curah_hujan:    { label: 'Curah hujan 2015–2022', jenis: 'raster', file: 'data/Curah Hujan 2015-20221.tif', satuan: 'mm' },
     ndvi:           { label: 'NDVI', jenis: 'raster', file: 'data/NDVI_1.tif', field: 'auto' },
-    ndmi:           { label: 'NDMI', jenis: 'vektor', file: 'data/param_ndmi.geojson', field: 'auto' },
+    ndmi:           { label: 'NDMI', jenis: 'vektor', file: 'data/NDMI_1.tif', field: 'auto' },
     lst:            { label: 'LST siang (MODIS Terra + Aqua)', jenis: 'raster', file: 'data/LST_Gabungan_Kaltim_2015_2022.tif', satuan: '°C' },
     tutupan_lahan:  { label: 'Tutupan lahan', jenis: 'raster', file: 'data/tutlah_2.tif', kategorikal: true },
     gambut:         { label: 'Lahan gambut / KHG', jenis: 'raster', file: 'data/gambut_2.tif', field: 'auto' },
