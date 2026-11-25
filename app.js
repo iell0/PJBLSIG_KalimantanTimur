@@ -158,11 +158,41 @@ const DATA_LAYERS = [
 // =========================================================================
 const map = L.map('map').setView([-1.68, 113.38], 8);
 
-map.createPane('paneRaster').style.zIndex = 400;
-map.createPane('paneParameter').style.zIndex = 410;
-map.createPane('paneBahaya').style.zIndex = 420;
+// PERBAIKAN: sebelumnya semua raster berbagi satu pane (paneRaster, z 400),
+// sedangkan poligon parameter (z 410) dan Model Bahaya (z 420) selalu berada
+// DI ATAS raster. Akibatnya layer yang diaktifkan belakangan bisa tertutup
+// layer yang sudah tampil lebih dulu ("terkunci").
+// Sekarang setiap layer tematik punya pane sendiri, dan layer yang terakhir
+// diaktifkan pengguna selalu dipindah ke paling atas (bringLayerToFront).
+const PANE_Z_DASAR = 401;              // 401–439: layer tematik + model bahaya
 map.createPane('paneAOI').style.zIndex = 440;
 map.createPane('paneTitik').style.zIndex = 450;
+
+let urutanPane = [];
+
+function paneFor(key) {
+  const nama = `pane_${key}`;
+  if (!map.getPane(nama)) {
+    map.createPane(nama);
+    urutanPane.push(key);
+    terapkanUrutanPane();
+  }
+  return nama;
+}
+
+function terapkanUrutanPane() {
+  urutanPane.forEach((k, i) => {
+    const pane = map.getPane(`pane_${k}`);
+    if (pane) pane.style.zIndex = PANE_Z_DASAR + i;
+  });
+}
+
+function bringLayerToFront(key) {
+  if (!map.getPane(`pane_${key}`)) return;   // layer titik memakai paneTitik
+  urutanPane = urutanPane.filter(k => k !== key);
+  urutanPane.push(key);
+  terapkanUrutanPane();
+}
 
 const osm = L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -201,6 +231,9 @@ L.control.layers({
 }, {}, {
   collapsed: true
 }).addTo(map);
+
+DATA_LAYERS.filter(cfg => !cfg.point).forEach(cfg => paneFor(cfg.key));
+paneFor('bahaya');
 
 // =========================================================================
 // 2. NAVIGASI SUB-MENU
@@ -453,7 +486,7 @@ function renderBahayaLayer(
       features: filteredFeatures
     },
     {
-      pane: 'paneBahaya',
+      pane: paneFor('bahaya'),
 
       style: feature => ({
         fillColor: getColor(
@@ -720,6 +753,8 @@ function handleLayerToggle(key, isChecked) {
 
   if (isChecked) {
 
+    bringLayerToFront(key);
+
     if (key === BAHAYA_KEY) {
 
       // Aktifkan Model Bahaya:
@@ -865,7 +900,7 @@ async function loadVector(cfg) {
 
   const pane = cfg.point
     ? 'paneTitik'
-    : 'paneParameter';
+    : paneFor(cfg.key);
 
   const layer = L.geoJSON(
     data,
@@ -991,10 +1026,8 @@ async function loadRaster(cfg) {
 
     georaster,
 
-    // Menggunakan pane raster khusus.
-    pane: 'paneRaster',
-
-    zIndex: 250,
+    // Pane sendiri per raster (lihat paneFor).
+    pane: paneFor(cfg.key),
 
     opacity: getSliderOpacity(cfg.key, 0.7),
 
@@ -1020,7 +1053,7 @@ function loadTile(cfg) {
   const layer = L.tileLayer(
     cfg.file,
     {
-      pane: 'paneRaster',
+      pane: paneFor(cfg.key),
 
       minZoom: cfg.minZoom ?? 0,
 
@@ -1338,6 +1371,20 @@ document.querySelectorAll('.layer-opacity').forEach(
 // =========================================================================
 // 8D. FILTER WILAYAH
 // =========================================================================
+// PERBAIKAN: sebelumnya filter, pencarian, reset, dan tombol "Tampilkan Hasil
+// Model Awal" hanya menggambar ulang Model Bahaya. Jika checkbox Model Bahaya
+// sudah mati (karena pengguna menyalakan layer tematik), hasilnya tidak pernah
+// tampil dan peta tetap menampilkan layer sebelumnya.
+function aktifkanModelBahaya() {
+  const cb = document.querySelector(`.layer-toggle[data-layer="${BAHAYA_KEY}"]`);
+  if (cb && !cb.checked) {
+    cb.checked = true;
+    handleLayerToggle(BAHAYA_KEY, true);
+  } else {
+    bringLayerToFront(BAHAYA_KEY);
+  }
+}
+
 const filterKabEl = document.getElementById(
   'filter-kab'
 );
@@ -1346,6 +1393,7 @@ if (filterKabEl) {
 
   filterKabEl.addEventListener('change', () => {
 
+    aktifkanModelBahaya();
     renderBahayaLayer({
       autoZoom: true,
       isBaseline: false
@@ -1362,6 +1410,7 @@ if (filterKelasEl) {
 
   filterKelasEl.addEventListener('change', () => {
 
+    aktifkanModelBahaya();
     renderBahayaLayer({
       autoZoom: false,
       isBaseline: false
@@ -1378,6 +1427,7 @@ if (searchWilayahEl) {
 
   searchWilayahEl.addEventListener('input', () => {
 
+    aktifkanModelBahaya();
     renderBahayaLayer({
       autoZoom: true,
       isBaseline: false
@@ -1409,6 +1459,7 @@ if (resetFilterBtn) {
       filterKelasEl.value = 'ALL';
     }
 
+    aktifkanModelBahaya();
     renderBahayaLayer({
       autoZoom: true,
       isBaseline: false
@@ -1428,6 +1479,7 @@ if (showBaselineBtn) {
 
   showBaselineBtn.addEventListener('click', () => {
 
+    aktifkanModelBahaya();
     renderBahayaLayer({
       autoZoom: false,
       isBaseline: true
@@ -1595,6 +1647,8 @@ window.WebGIS = {
   renderBahayaLayer,
 
   syncLayerVisibility,
+
+  bringLayerToFront,
 
   getBaselineRekap: () => baselineRekap,
 
