@@ -120,8 +120,9 @@
   function fieldUntuk(key, fc) {
     const cfg = infoSlot(key);
     if (cfg.field && cfg.field !== 'auto') return cfg.field;
-    const kand = key === 'gambut' ? C.KANDIDAT_FIELD.gambut : key === 'kawasan_hutan' ? C.KANDIDAT_FIELD.kawasan : C.KANDIDAT_FIELD.nilai;
-    return C.deteksiField(fc.features, kand) || (key === 'kawasan_hutan' ? null : C.deteksiFieldNumerik(fc.features));
+           const gambut = key === 'gambut' || key === 'gambut_dampak', hutan = key === 'kawasan_hutan' || key === 'hutan_dampak';
+    const kand = gambut ? C.KANDIDAT_FIELD.gambut : hutan ? C.KANDIDAT_FIELD.kawasan : C.KANDIDAT_FIELD.nilai;
+    return C.deteksiField(fc.features, kand) || (hutan || key === 'gambut_dampak' ? null : C.deteksiFieldNumerik(fc.features));
   }
   function gridkanSlot(key) {
     delete S.lapis[key];
@@ -272,7 +273,7 @@
   function hitungDampak() {
     const T = KW.CFG.model.kelas.kelasTinggiMulai;
     const lap = {};
-    const g = S.lapis.gambut;
+        const g = (S.lapis.gambut_dampak && S.lapis.gambut_dampak.adaFitur) ? S.lapis.gambut_dampak : S.lapis.gambut;
     if (g && g.adaFitur) {
       lap.gambut = new Uint8Array(S.grid.n);
       const bukan = g.kategori ? g.kategori.map(t => /non|bukan|mineral|tidak/i.test(t)) : null;
@@ -282,10 +283,11 @@
         lap.gambut[i] = 1;
       }
     }
-    const h = S.lapis.kawasan_hutan;
-    if (h && h.idx) {
+        const kunciHutan = (S.lapis.hutan_dampak && S.lapis.hutan_dampak.idx) ? 'hutan_dampak' : 'kawasan_hutan';
+    const h = S.lapis[kunciHutan];
+    if (h && h.idx && S.slot[kunciHutan].data.tipe === 'vektor') {
       lap.hutanIdx = h.idx;
-      const fc = S.slot.kawasan_hutan.data.fc, field = S.slot.kawasan_hutan.field;
+      const fc = S.slot[kunciHutan].data.fc, field = S.slot[kunciHutan].field;
       lap.hutanKategori = fc.features.map(f => field ? String((f.properties || {})[field] ?? 'Tanpa keterangan') : 'Kawasan hutan');
     }
     const tl = S.lapis.tutupan_lahan;
