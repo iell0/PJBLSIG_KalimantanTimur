@@ -85,7 +85,6 @@ window.KARHUTLA_CONFIG = {
     kerapatan_kde:  { label: 'Kerapatan titik api (file KDE)', jenis: 'raster', file: 'data/kerapatan_KDE.tif' },
     fasilitas:      { label: 'Permukiman & fasilitas', jenis: 'titik', file: 'data/dampak_fasilitas.geojson' },
     penduduk:       { label: 'Jumlah penduduk per piksel (mis. WorldPop)', jenis: 'raster', file: null, satuan: 'jiwa' },
-    area_terbakar:  { label: 'Area bekas terbakar aktual (mis. MCD64A1 / KLHK)', jenis: 'raster_atau_vektor', file: null },
     model_poligon:  { label: 'Model bahaya versi poligon (lama)', jenis: 'vektor', file: 'data/model_bahaya_api.geojson' }
   },
 
