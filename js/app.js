@@ -435,3 +435,19 @@
     await KW.muatUlangSemua();
   };
 })();
+
+KW.layerSlopeTiles = null;
+KW.tampilkanSlopeTiles = function () {
+  const cfg = KW.CFG.visualisasi.slopeTiles;
+  if (!cfg || !cfg.aktif) return;
+  if (!KW.layerSlopeTiles) {
+    KW.layerSlopeTiles = L.tileLayer(cfg.url, {
+      minZoom: cfg.minZoom,
+      maxZoom: cfg.maxZoom,
+      opacity: cfg.opacity,
+      attribution: cfg.attribution,
+      crossOrigin: true
+    });
+  }
+  return KW.layerSlopeTiles;
+};
