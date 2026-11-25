@@ -69,7 +69,7 @@ window.KARHUTLA_CONFIG = {
    * jenis: 'raster' (GeoTIFF), 'vektor' (GeoJSON/SHP zip), 'titik' (GeoJSON/CSV)
    * ------------------------------------------------------------------------- */
   data: {
-    batas:          { label: 'Batas administrasi kab/kota (AOI)', jenis: 'vektor', file: 'data/Batas_Kabupaten_Kota_Kaltim.geojson',
+    batas:          { label: 'Batas administrasi kab/kota (AOI)', jenis: 'vektor', file: 'data/Batas_Kabkot_Kaltim.geojson',
                       fieldNama: 'auto' },
     hotspot:        { label: 'Titik api VIIRS SNPP (NASA FIRMS)', jenis: 'titik', file: 'data/titik_api_firms.geojson' },
     cuaca:          { label: 'Parameter cuaca & kekeringan (KBDI/SPI/HTH/DC)', jenis: 'raster', file: 'data/PARAMETER CUACA 2015-20221.tif' },
