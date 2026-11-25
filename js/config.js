@@ -82,7 +82,7 @@ window.KARHUTLA_CONFIG = {
     slope:          { label: 'Kemiringan lereng', jenis: 'raster', file: 'data/SLOPE_1.tif', field: 'auto' },
     aksesibilitas:  { label: 'Aksesibilitas (jarak jalan/sungai/permukiman)', jenis: 'raster', file: 'data/akses_2.tif' },
     kawasan_hutan:  { label: 'Kawasan hutan', jenis: 'raster', file: 'data/3_hutan.tif', field: 'auto' },
-    kerapatan_kde:  { label: 'Kerapatan titik api (file KDE)', jenis: 'raster', file: 'data/kerapatan_KDE.tif' },
+    kerapatan_kde:  { label: 'Kerapatan titik api (file KDE)', jenis: 'raster', file: 'data/KDE_fix.tif' },
     fasilitas:      { label: 'Permukiman & fasilitas', jenis: 'titik', file: 'data/dampak_fasilitas.geojson' },
     penduduk:       { label: 'Jumlah penduduk per piksel (mis. WorldPop)', jenis: 'raster', file: null, satuan: 'jiwa' },
     model_poligon:  { label: 'Model bahaya versi poligon (lama)', jenis: 'vektor', file: 'data/model_bahaya_api.geojson' }
