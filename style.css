@@ -301,3 +301,5 @@ details.blok > div { padding-bottom: 10px; }
   .bilah-atas { right: 10px; }
   .kp-baris { flex-wrap: wrap; }
 }
+
+.kontrol-periode { display: none !important; }
