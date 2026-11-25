@@ -88,6 +88,17 @@ window.KARHUTLA_CONFIG = {
     model_poligon:  { label: 'Model bahaya versi poligon (lama)', jenis: 'vektor', file: 'data/model_bahaya_api.geojson' }
   },
 
+  visualisasi: {
+    slopeTiles: {
+      aktif: true,
+      nama: 'Kemiringan Lereng',
+      url: 'data/slope_tiles/{z}/{x}/{y}.png',
+      minZoom: 5,
+      maxZoom: 18,
+      opacity: 0.75,
+      attribution: 'Slope Map'}
+  },
+  
   /* ---------------------------------------------------------------------------
    * MODEL BAHAYA: WEIGHTED OVERLAY DUA TINGKAT
    *   Bahaya = Σ (bobot_kelompok × Σ(bobot_parameter × skor_parameter) / Σ bobot_parameter)
