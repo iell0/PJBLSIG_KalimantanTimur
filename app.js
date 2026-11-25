@@ -101,7 +101,7 @@ const DATA_LAYERS = [
   {
     key: 'aksesibilitas',
     title: 'Aksesibilitas',
-    file: './data/aksesibilitas.tif',
+    file: './data/akses_2.tif',
     type: 'raster',
     ramp: 'akses'
   },
@@ -116,11 +116,11 @@ const DATA_LAYERS = [
   {
     key: 'tutupan_lahan',
     title: 'Tutupan Lahan',
-    file: './data/tutupan_lahan.tif',
+    file: './data/tutupanlahan_2.tif',
     type: 'raster',
     categorical: true,
     classes: {
-      1: { label: 'Hutan', color: '#14532d' },
+      1: { label: 'Badan Air', color: '#14532d' },
       2: { label: 'Semak/Belukar', color: '#65a30d' },
       3: { label: 'Pertanian', color: '#facc15' },
       4: { label: 'Permukiman', color: '#dc2626' },
@@ -135,22 +135,16 @@ const DATA_LAYERS = [
   },
   {
     key: 'gambut',
-    title: 'Parameter: Lahan Gambut',
-    file: 'data/parameter_gambut.geojson',
-    style: POLY('#78350f', '#451a03')
+    title: 'Lahan Gambut',
+    file: 'data/gambut_2.tif',
+    type: 'raster'
   },
   {
     key: 'slope',
-    title: 'Parameter: Kemiringan Lereng (Slope)',
-    file: 'data/param_slope.geojson',
-    style: POLY('#a855f7', '#7e22ce')
+    title: 'Kemiringan Lereng (Slope)',
+    file: 'data/FINAL SLOPE.tif',
+    type: 'raster' 
   },
-  {
-    key: 'kawasan_hutan',
-    title: 'Parameter: Kawasan Hutan',
-    file: 'data/param_kawasan_hutan.geojson',
-    style: POLY('#14532d', '#052e16')
-  }
 ];
 
 // =========================================================================
