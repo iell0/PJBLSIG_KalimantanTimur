@@ -79,7 +79,7 @@ window.KARHUTLA_CONFIG = {
     lst:            { label: 'LST siang (MODIS Terra + Aqua)', jenis: 'raster', file: 'data/LST_Gabungan_Kaltim_2015_2022.tif', satuan: '°C' },
     tutupan_lahan:  { label: 'Tutupan lahan', jenis: 'raster', file: 'data/tutupanlahan_2.tif', kategorikal: true },
     gambut:         { label: 'Lahan gambut / KHG', jenis: 'raster', file: 'data/gambut_2.tif', field: 'auto' },
-    slope:          { label: 'Kemiringan lereng', jenis: 'raster', file: 'data/FINAL SLOPE.tif', field: 'auto' },
+    slope:          { label: 'Kemiringan lereng', jenis: 'raster', file: 'data/SLOPE_1.tif', field: 'auto' },
     aksesibilitas:  { label: 'Aksesibilitas (jarak jalan/sungai/permukiman)', jenis: 'raster', file: 'data/akses_2.tif' },
     kanal:          { label: 'Kanal / drainase', jenis: 'vektor', file: null, field: 'auto' },
     kawasan_hutan:  { label: 'Kawasan hutan / konsesi', jenis: 'vektor', file: 'data/param_kawasan_hutan.geojson', field: 'auto' },
