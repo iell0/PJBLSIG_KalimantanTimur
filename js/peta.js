@@ -174,6 +174,26 @@
     L.control.layers(basemap, null, { position: 'topright', collapsed: true }).addTo(map);
     L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
 
+    // ============================================================
+    // SLOPE XYZ TILES
+    // ============================================================
+    
+    KW.layerSlopeTiles = null;
+    KW.buatLayerSlopeTiles = function () {
+      const cfg = KW.CFG.visualisasi?.slopeTiles;
+      if (!cfg || !cfg.aktif) return null;
+      if (!KW.layerSlopeTiles) {
+        KW.layerSlopeTiles = L.tileLayer(cfg.url, {
+          minZoom: cfg.minZoom,
+          maxZoom: cfg.maxZoom,
+          tms: false,
+          opacity: cfg.opacity,
+          attribution: cfg.attribution
+        });
+      }
+      return KW.layerSlopeTiles;
+    };
+    
     // tombol kembali ke extent
     const Home = L.Control.extend({
       options: { position: 'topleft' },
