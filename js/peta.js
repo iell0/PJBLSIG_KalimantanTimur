@@ -103,6 +103,7 @@
     { id: 'p_kerapatan_input', grup: 'parameter', nama: 'Kerapatan titik api (masukan model)', slot: '_kerapatan', param: 'kerapatan', ramp: 'kerapatan', satuan: 'titik/km²' },
     { id: 'p_fasilitas', grup: 'parameter', nama: 'Permukiman & fasilitas', slot: 'fasilitas', khusus: 'fasilitas' },
     { id: 'p_hotspot', grup: 'parameter', nama: 'Titik api historis (VIIRS)', slot: 'hotspot', khusus: 'hotspot' },
+    { id: 'p_slope', grup: 'parameter', nama: 'Kemiringan lereng', slot: 'slope', param: 'slope', khusus: 'tileSlope' },
     { id: 'm_kelas', grup: 'model', nama: 'Tingkat bahaya karhutla (5 kelas)', khusus: 'kelas' },
     { id: 'm_indeks', grup: 'model', nama: 'Indeks bahaya kontinu (1–5)', khusus: 'indeks' },
     { id: 'm_kerapatan', grup: 'model', nama: 'Kerapatan titik api (periode tampilan)', khusus: 'kerapatanTampil' },
@@ -123,6 +124,10 @@
   /** Ketersediaan data per layer: {ada: bool, alasan} */
   KW.ketersediaan = function (l) {
     if (!S.siap) return { ada: false, alasan: 'Memuat…' };
+    if (l.khusus === 'tileSlope') {
+      const cfg = KW.CFG.visualisasi?.slopeTiles;
+      return (cfg && cfg.aktif) ? { ada: true } : { ada: false, alasan: 'Slope tiles dinonaktifkan di config' };
+    }
     if (l.slot === '_kerapatan') return S.lapis._kerapatan ? { ada: true } : { ada: false, alasan: 'Belum ada titik api / berkas KDE' };
     if (l.khusus === 'hotspot') return S.hotspotSemua.length ? { ada: true } : { ada: false, alasan: 'Belum ada data titik api' };
     if (l.khusus === 'fasilitas') return S.fasilitas.length ? { ada: true } : { ada: false, alasan: 'Belum ada data' };
@@ -177,15 +182,17 @@
     // ============================================================
     // SLOPE XYZ TILES
     // ============================================================
-    
     KW.layerSlopeTiles = null;
-    KW.buatLayerSlopeTiles = function () {
+    KW.buatLayerSlopeTiles = function (paneName) {
       const cfg = KW.CFG.visualisasi?.slopeTiles;
       if (!cfg || !cfg.aktif) return null;
       if (!KW.layerSlopeTiles) {
         KW.layerSlopeTiles = L.tileLayer(cfg.url, {
-          minZoom: cfg.minZoom,
-          maxZoom: cfg.maxZoom,
+          pane: paneName || 'overlayPane',
+          minZoom: cfg.minZoom || 5,
+          maxZoom: cfg.maxZoom || 18,
+          minNativeZoom: 12,
+          maxNativeZoom: 12,
           tms: false,
           opacity: cfg.opacity,
           attribution: cfg.attribution
@@ -540,6 +547,16 @@
         });
         l.jenisLeaflet = 'vektor';
         return { layer: lyr, legenda: legendaSkor() + '<div class="lg-catatan">Warna = atribut kelas, atau rerata atribut skor_* pada berkas model_bahaya_api.geojson. Bukan hasil perhitungan WebGIS ini; dipakai sebagai pembanding.</div>' };
+      }
+      case 'tileSlope': {
+        const lyr = KW.buatLayerSlopeTiles(pane(l.id));
+        if (!lyr) return null;
+        lyr.setOpacity(l.opasitas);
+        l.jenisLeaflet = 'tile';
+        return {
+          layer: lyr,
+          legenda: '<div class="lg-catatan">Visualisasi XYZ Tiles kemiringan lereng (Zoom 12)</div>'
+        };
       }
     }
     return null;
