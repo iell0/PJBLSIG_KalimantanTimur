@@ -303,3 +303,9 @@ details.blok > div { padding-bottom: 10px; }
 }
 
 .kontrol-periode { display: none !important; }
+
+/* versi publik: sembunyikan kontrol pengelolaan data */
+.slot .unggah,
+.pilih-field,
+#muat-ulang-data,
+#tab-data > .kotak-info { display: none !important; }
