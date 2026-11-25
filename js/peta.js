@@ -26,14 +26,15 @@
       if (cache[h]) return cache[h];
       const x = h.replace('#', '');
       return (cache[h] = [parseInt(x.slice(0, 2), 16), parseInt(x.slice(2, 4), 16), parseInt(x.slice(4, 6), 16)]);
+  };
+  const WARNA_TUTUPAN = {
+    1: '#3288bd', // Badan Air
+    2: '#a6d96a', // Area Non Vegetasi
+    3: '#ffffbf', // Hutan
+    4: '#fd7d00', // Pertanian
+    5: '#dc1010'  // Formasi Alami Non Hutan
     };
-    const WARNA_TUTUPAN = {
-      1: '#3288bd', // Badan Air
-      2: '#a6d96a', // Area Non Vegetasi
-      3: '#ffffbf', // Hutan
-      4: '#fd7d00', // Pertanian
-      5: '#dc1010'  // Formasi Alami Non Hutan
-    };
+  } 
   function warnaRamp(stops, t) {
     t = Math.max(0, Math.min(1, t));
     const p = t * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(p)), f = p - i;
