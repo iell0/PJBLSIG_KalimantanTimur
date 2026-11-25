@@ -1,310 +1,185 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WebGIS Pemodelan Bahaya & Dampak Karhutla - GD4103</title>
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebGIS Bahaya dan Dampak Karhutla Kalimantan Timur · GD4103 K-02</title>
+  <meta name="description" content="WebGIS pemodelan bahaya dan dampak kebakaran hutan dan lahan Provinsi Kalimantan Timur — GD4103 Sistem Informasi Geografis, Kelompok 2, ITB.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3-1-3 0-6 1-9z' fill='%23f97316'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Sidebar Utama -->
-    <aside class="sidebar">
-      <header class="sidebar-header">
-        <h1>WebGIS Bahaya Karhutla</h1>
-        <p>PjBL GD4103 Sistem Informasi Geografis</p>
-      </header>
+  <header class="kepala">
+    <div class="merek">
+      <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3-1-3 0-6 1-9z" fill="currentColor"/></svg>
+      <div>
+        <h1>WEBGIS BAHAYA DAN DAMPAK KARHUTLA KALIMANTAN TIMUR</h1>
+        <p>Sistem Informasi Geografis untuk Pemodelan Bahaya Kebakaran Hutan dan Lahan</p>
+      </div>
+    </div>
+    <div class="identitas">
+      <span>GD4103 Sistem Informasi Geografis</span>
+      <span class="pemisah">Kelompok 2 | K-02</span>
+      <span class="pemisah">Institut Teknologi Bandung</span>
+    </div>
+  </header>
 
-      <!-- Navigasi 3 Sub-Menu (Tab) -->
-      <nav class="sub-menu-nav">
-        <button class="tab-btn active" data-tab="tab-layer">1. Layer & Filter</button>
-        <button class="tab-btn" data-tab="tab-hasil">2. Hasil & Statistik</button>
-        <button class="tab-btn" data-tab="tab-simulasi">3. Simulasi Bobot</button>
-      </nav>
+  <div class="tata">
+    <nav class="rel" aria-label="Menu utama">
+      <button class="rel-tombol aktif" data-tab="ringkasan" title="Ringkasan">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Ringkasan</span></button>
+      <button class="rel-tombol" data-tab="layer" title="Layer & filter">
+        <svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5" opacity=".55"/></svg><span>Layer</span></button>
+      <button class="rel-tombol" data-tab="model" title="Pemodelan bahaya">
+        <svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Model</span></button>
+      <button class="rel-tombol" data-tab="validasi" title="Validasi model">
+        <svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="M4 18C8 8 12 6 20 4"/></svg><span>Validasi</span></button>
+      <button class="rel-tombol" data-tab="dampak" title="Analisis dampak">
+        <svg viewBox="0 0 24 24"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17v.5"/></svg><span>Dampak</span></button>
+      <button class="rel-tombol" data-tab="metodologi" title="Metodologi">
+        <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2V5z"/><path d="M4 19a2 2 0 0 1 2-2h12v4H6a2 2 0 0 1-2-2z"/></svg><span>Metodologi</span></button>
+      <button class="rel-tombol" data-tab="data" title="Data & unduh">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg><span>Data</span></button>
+      <div class="rel-pengisi"></div>
+      <button class="rel-tombol kecil" id="tutup-panel" title="Sembunyikan/tampilkan panel">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg><span>Panel</span></button>
+    </nav>
 
-      <!-- ========================================================= -->
-      <!-- SUB-MENU 1: PENCARIAN, FILTER & KONTROL LAYER             -->
-      <!-- ========================================================= -->
-      <div id="tab-layer" class="tab-content active">
-        <!-- Pencarian & Filter Wilayah -->
-        <section class="panel-box">
-          <h3>Pencarian & Filter Wilayah</h3>
-          
-          <label for="search-wilayah">Cari Kabupaten / Kecamatan:</label>
-          <input type="text" id="search-wilayah" placeholder="Ketik nama wilayah..." />
+    <aside class="panel">
+      <!-- ============================== RINGKASAN -->
+      <section class="tab aktif" id="tab-ringkasan">
+        <div class="tab-kepala"><h2>Ringkasan</h2><span class="status-kecil" id="status-data-ringkas">Memuat data…</span></div>
+        <div class="kpi-grid">
+          <div class="kpi utama"><span>Titik api (periode tampilan)</span><b id="kpi-hotspot">–</b><small id="kpi-hotspot-ket"></small></div>
+          <div class="kpi"><span>Luas bahaya tinggi</span><b id="kpi-tinggi">–</b><small id="kpi-tinggi-ket"></small></div>
+          <div class="kpi"><span>Kab/kota bahaya tertinggi</span><b id="kpi-kab">–</b><small id="kpi-kab-ket"></small></div>
+          <div class="kpi"><span>Area terbakar aktual</span><b id="kpi-terbakar">–</b><small id="kpi-terbakar-ket"></small></div>
+          <div class="kpi lebar"><span>Validasi model</span><b id="kpi-auc">–</b><small id="kpi-auc-ket"></small></div>
+        </div>
+        <div id="ringkas-status"></div>
+        <h3>Distribusi kelas bahaya</h3>
+        <div class="grafik-kotak"><canvas id="ch-kelas"></canvas></div>
+        <h3>Tren titik api per tahun</h3>
+        <div class="legenda-mini"><i style="background:#94a3b8"></i>historis <i style="background:#f97316"></i>pengembangan <i style="background:#38bdf8"></i>pengujian · batang pudar = di luar periode tampilan</div>
+        <div class="grafik-kotak"><canvas id="ch-tahun"></canvas></div>
+        <h3>Sebaran titik api per bulan (periode tampilan)</h3>
+        <div class="grafik-kotak pendek"><canvas id="ch-bulan"></canvas></div>
+        <h3>Titik api per kabupaten/kota (periode tampilan)</h3>
+        <div class="grafik-kotak tinggi"><canvas id="ch-kab"></canvas></div>
+        <h3>Wilayah prioritas mitigasi</h3>
+        <ol class="daftar-prioritas" id="ringkas-prioritas"></ol>
+        <p class="catatan" id="ringkas-grafik-catatan"></p>
+      </section>
 
-          <label for="filter-kab">Pilih Kabupaten / Kota:</label>
-          <select id="filter-kab">
-            <option value="ALL">Semua Kabupaten/Kota</option>
-          </select>
+      <!-- ============================== LAYER -->
+      <section class="tab" id="tab-layer">
+        <div class="tab-kepala"><h2>Layer &amp; filter</h2></div>
+        <p class="catatan">Centang untuk menampilkan. Layer yang terakhir dicentang tampil paling atas. Periode titik api diatur di panel atas peta.</p>
+        <div id="daftar-lapisan"></div>
+      </section>
 
-          <label for="filter-kelas">Kelas Bahaya Api:</label>
-          <select id="filter-kelas">
-            <option value="ALL">Semua Kelas</option>
-            <option value="Tinggi">Bahaya Tinggi</option>
-            <option value="Sedang">Bahaya Sedang</option>
-            <option value="Rendah">Bahaya Rendah</option>
-          </select>
-
-          <button id="btn-reset-filter" class="btn-secondary">Reset Filter & Zoom</button>
-        </section>
-
-        <!-- Kontrol Layer & Transparansi -->
-        <section class="panel-box">
-          <h3>Kontrol Layer & Transparansi</h3>
-
-          <!-- Hasil Pemodelan & Dampak -->
-          <div class="layer-group">
-            <div class="group-title">Hasil Model & Dampak</div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="bahaya" checked />
-                <span>Model Bahaya Api</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="bahaya" min="0" max="1" step="0.1" value="0.75" />
-            </div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="aoi" checked />
-                <span>AOI Kalimantan Timur</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="aoi" min="0" max="1" step="0.1" value="0.9" />
-            </div>
-          </div>
-
-          <!-- A. Kondisi Iklim -->
-          <div class="layer-group">
-            <div class="group-title">A. Kondisi Iklim</div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="curah_hujan" />
-                <span>Curah Hujan</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="curah_hujan" min="0" max="1" step="0.1" value="0.6" />
-            </div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="cuaca" />
-                <span>Parameter Cuaca</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="cuaca" min="0" max="1" step="0.1" value="0.6" />
-            </div>
-          </div>
-
-          <!-- B. Kondisi Permukaan -->
-          <div class="layer-group">
-            <div class="group-title">B. Kondisi Permukaan</div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="lst" />
-                <span>LST (Suhu Permukaan)</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="lst" min="0" max="1" step="0.1" value="0.6" />
-            </div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="ndvi" />
-                <span>NDVI (Vegetasi)</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="ndvi" min="0" max="1" step="0.1" value="0.6" />
-            </div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="ndmi" />
-                <span>NDMI (Kelembapan)</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="ndmi" min="0" max="1" step="0.1" value="0.6" />
-            </div>
-          </div>
-
-          <!-- C. Kondisi Fisik Wilayah -->
-          <div class="layer-group">
-            <div class="group-title">C. Kondisi Fisik Wilayah</div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="tutupan_lahan" />
-                <span>Tutupan Lahan</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="tutupan_lahan" min="0" max="1" step="0.1" value="0.6" />
-            </div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="gambut" />
-                <span>Lahan Gambut</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="gambut" min="0" max="1" step="0.1" value="0.6" />
-            </div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="slope" />
-                <span>Slope (Kemiringan)</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="slope" min="0" max="1" step="0.1" value="0.6" />
-            </div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="aksesibilitas" />
-                <span>Aksesibilitas</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="aksesibilitas" min="0" max="1" step="0.1" value="0.6" />
-            </div>
-          </div>
-
-          <!-- D. Kejadian Kebakaran -->
-          <div class="layer-group">
-            <div class="group-title">D. Kejadian Kebakaran</div>
-            <div class="layer-item">
-              <label class="checkbox-label">
-                <input type="checkbox" class="layer-toggle" data-layer="titik_api" checked />
-                <span>Titik Api (Hotspot)</span>
-              </label>
-              <input type="range" class="layer-opacity" data-layer="titik_api" min="0" max="1" step="0.1" value="0.9" />
-            </div>
-            <div class="layer-item">
-            <label class="checkbox-label">
-              <input type="checkbox" class="layer-toggle" data-layer="kerapatan_api" />
-              <span>Kerapatan Api</span>
-            </label>
-            <input type="range" class="layer-opacity" data-layer="kerapatan_api" min="0" max="1" step="0.1" value="0.7" />
-          </div>
+      <!-- ============================== MODEL -->
+      <section class="tab" id="tab-model">
+        <div class="tab-kepala"><h2>Pemodelan bahaya</h2></div>
+        <div class="kotak-info">Metode: <b>weighted overlay</b> dua tingkat dengan bobot kelompok dari <b>AHP</b>. Dipilih karena data parameter tersedia lengkap secara spasial sedangkan data kejadian dipisahkan untuk pengujian; metode berbasis data (FR/ML) membutuhkan titik api sebagai data latih sehingga bersaing dengan kebutuhan validasi independen. Setiap perubahan di bawah langsung menghitung ulang peta.</div>
+        <div class="status-model" id="model-status">Model dihitung saat data dimuat.</div>
+        <h3>Formula</h3>
+        <div id="model-rumus"></div>
+        <h3>Bobot kelompok parameter</h3>
+        <div id="model-bobot"></div>
+        <details class="blok"><summary>Kalkulator AHP (perbandingan berpasangan)</summary><div id="model-ahp"></div></details>
+        <h3>Parameter &amp; aturan skoring (1–5)</h3>
+        <div id="model-parameter"></div>
+        <h3>Klasifikasi tingkat bahaya</h3>
+        <div id="model-kelas"></div>
+        <h3>Periode &amp; titik api</h3>
+        <div id="model-periode"></div>
+        <div class="grup-tombol">
+          <button type="button" class="tombol utama" id="hitung-ulang">Hitung ulang model</button>
+          <button type="button" class="tombol" id="reset-model">Kembalikan bawaan</button>
+          <button type="button" class="tombol" id="simpan-pengaturan">Simpan pengaturan (JSON)</button>
+          <label class="tombol">Muat pengaturan<input type="file" id="muat-pengaturan" accept=".json" hidden></label>
         </div>
       </section>
-    </div>
-          
 
-      <!-- ========================================================= -->
-      <!-- SUB-MENU 2: PERHITUNGAN, HASIL & STATISTIKAL RASTER AWAL  -->
-      <!-- ========================================================= -->
-      <div id="tab-hasil" class="tab-content">
-        <section class="panel-box">
-          <h3>Perhitungan Model Awal (Baseline)</h3>
-          <p class="info-text">
-            Model bahaya api dihitung menggunakan metode <b>Weighted Overlay</b> berdasarkan skor parameter standar kelompok (Gambut 30%, Iklim 25%, Permukaan 25%, Fisik/Akses 20%).
-          </p>
-          <div class="formula-box">
-            Skor = (0.30 &times; Gambut) + (0.25 &times; Iklim) + (0.25 &times; Permukaan) + (0.20 &times; Fisik)
-          </div>
-          <button id="btn-show-baseline" class="btn-secondary">Tampilkan Hasil Model Awal di Peta</button>
-        </section>
+      <!-- ============================== VALIDASI -->
+      <section class="tab" id="tab-validasi">
+        <div class="tab-kepala"><h2>Validasi model</h2></div>
+        <div id="validasi-isi"></div>
+      </section>
 
-        <section class="panel-box">
-          <h3>Statistikal Hasil Model & Dampak</h3>
-          <div class="stat-cards">
-            <div class="stat-card">
-              <span class="stat-label">Total Luas Wilayah</span>
-              <strong id="base-luas-total">0 Ha</strong>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Zona Bahaya Tinggi</span>
-              <strong id="base-luas-tinggi" class="text-danger">0 Ha</strong>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Penduduk Terpapar</span>
-              <strong id="base-penduduk">0 Jiwa</strong>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Titik Api Tervalidasi</span>
-              <strong id="base-hotspot">0 Titik</strong>
-            </div>
-          </div>
+      <!-- ============================== DAMPAK -->
+      <section class="tab" id="tab-dampak">
+        <div class="tab-kepala"><h2>Analisis dampak</h2></div>
+        <div id="dampak-isi"></div>
+      </section>
 
-          <canvas id="baselineChart" height="175"></canvas>
+      <!-- ============================== METODOLOGI -->
+      <section class="tab" id="tab-metodologi">
+        <div class="tab-kepala"><h2>Metodologi</h2></div>
+        <div id="metodologi-isi"></div>
+      </section>
 
-          <table class="stat-table">
-            <thead>
-              <tr>
-                <th>Kelas Bahaya</th>
-                <th>Luas (Ha)</th>
-                <th>Proporsi</th>
-              </tr>
-            </thead>
-            <tbody id="baseline-table-body">
-              <tr><td colspan="3">Memuat data...</td></tr>
-            </tbody>
-          </table>
-        </section>
-      </div>
-
-      <!-- ========================================================= -->
-      <!-- SUB-MENU 3: SIMULASI BOBOT & STATISTIKAL HASIL SIMULASI   -->
-      <!-- ========================================================= -->
-      <div id="tab-simulasi" class="tab-content">
-        <section class="panel-box">
-          <h3>Simulasi Bobot Parameter (On-the-Fly)</h3>
-          <p class="info-text">
-            Geser bobot tiap kelompok parameter untuk mensimulasikan ulang distribusi spasial bahaya karhutla secara langsung:
-          </p>
-
-          <div class="slider-row">
-            <span>Lahan Gambut (<b id="lbl-w-gambut">30%</b>)</span>
-            <input type="range" id="w-gambut" min="0" max="100" value="30" />
-          </div>
-          <div class="slider-row">
-            <span>Kondisi Iklim (<b id="lbl-w-iklim">25%</b>)</span>
-            <input type="range" id="w-iklim" min="0" max="100" value="25" />
-          </div>
-          <div class="slider-row">
-            <span>Permukaan (LST/NDVI) (<b id="lbl-w-permukaan">25%</b>)</span>
-            <input type="range" id="w-permukaan" min="0" max="100" value="25" />
-          </div>
-          <div class="slider-row">
-            <span>Fisik & Aksesibilitas (<b id="lbl-w-akses">20%</b>)</span>
-            <input type="range" id="w-akses" min="0" max="100" value="20" />
-          </div>
-
-          <div class="btn-group">
-            <button id="btn-recalculate" class="btn-primary">Hitung Ulang Model</button>
-            <button id="btn-reset-bobot" class="btn-secondary">Reset Bobot</button>
-          </div>
-        </section>
-
-        <section class="panel-box">
-          <h3>Statistikal Hasil Simulasi</h3>
-          <div class="stat-cards">
-            <div class="stat-card">
-              <span class="stat-label">Bahaya Tinggi (Simulasi)</span>
-              <strong id="sim-luas-tinggi" class="text-danger">0 Ha</strong>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Selisih vs Model Awal</span>
-              <strong id="sim-delta-luas">0 Ha</strong>
-            </div>
-            <div class="stat-card" style="grid-column: span 2;">
-              <span class="stat-label">Estimasi Penduduk Terpapar (Zona Tinggi)</span>
-              <strong id="sim-penduduk">0 Jiwa</strong>
-            </div>
-          </div>
-
-          <canvas id="simulasiChart" height="175"></canvas>
-
-          <table class="stat-table">
-            <thead>
-              <tr>
-                <th>Kelas</th>
-                <th>Awal (Ha)</th>
-                <th>Simulasi (Ha)</th>
-              </tr>
-            </thead>
-            <tbody id="simulasi-table-body">
-              <tr><td colspan="3">Klik "Hitung Ulang Model"</td></tr>
-            </tbody>
-          </table>
-        </section>
-      </div>
+      <!-- ============================== DATA -->
+      <section class="tab" id="tab-data">
+        <div class="tab-kepala"><h2>Data &amp; unduh</h2></div>
+        <div class="kotak-info">Data dibaca dari folder <code>data/</code> (nama berkas diatur di <code>js/config.js</code>). Data yang belum ada dapat diunggah: GeoJSON, CSV titik (kolom latitude/longitude), Shapefile dalam .zip, atau GeoTIFF. Unggahan hanya tersimpan selama halaman terbuka dan akan diganti bila tombol <i>Muat ulang</i> ditekan; untuk permanen, salin berkas ke folder <code>data/</code> dan isi namanya di <code>js/config.js</code>.</div>
+        <button type="button" class="tombol" id="muat-ulang-data">Muat ulang dari folder data/</button>
+        <div id="data-slot"></div>
+        <h3>Unduh hasil</h3>
+        <div class="grid-unduh">
+          <button type="button" class="tombol" id="ekspor-csv-tahun">CSV · titik api per tahun</button>
+          <button type="button" class="tombol" id="ekspor-csv-zona">CSV · statistik kab/kota</button>
+          <button type="button" class="tombol" id="ekspor-csv-titik">CSV · titik api (periode tampilan)</button>
+          <button type="button" class="tombol" id="ekspor-geojson-titik">GeoJSON · titik api</button>
+          <button type="button" class="tombol" id="ekspor-geojson-zona">GeoJSON · kab/kota + statistik</button>
+          <button type="button" class="tombol" id="ekspor-tif-indeks">GeoTIFF · indeks bahaya</button>
+          <button type="button" class="tombol" id="ekspor-tif-kelas">GeoTIFF · kelas bahaya</button>
+          <button type="button" class="tombol" id="ekspor-png">PNG · peta saat ini</button>
+          <button type="button" class="tombol" id="ekspor-pdf">PDF · laporan ringkas</button>
+          <button type="button" class="tombol" id="ekspor-json">JSON · pengaturan model</button>
+        </div>
+      </section>
     </aside>
 
-    <!-- Kontainer Peta Utama -->
-    <main id="map"></main>
+    <main class="area-peta">
+      <div id="map" aria-label="Peta interaktif"></div>
+      <div class="bilah-atas">
+      <div class="kontrol-periode" aria-label="Periode titik api">
+        <div class="kp-judul">Periode titik api <b id="label-periode">–</b></div>
+        <div class="preset-periode"></div>
+        <div class="kp-baris">
+          <label>Dari <input type="range" id="tahun-awal" step="1"></label>
+          <label>Sampai <input type="range" id="tahun-akhir" step="1"></label>
+          <label>Bulan <select id="bulan-awal"></select>–<select id="bulan-akhir"></select></label>
+          <button type="button" id="putar-periode" class="tombol-ikon" title="Putar animasi per tahun"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></button>
+        </div>
+      </div>
+      <div class="kontrol-cari">
+        <input type="search" id="cari-wilayah" list="daftar-wilayah" placeholder="Cari kab/kota atau “lat, lon”" aria-label="Cari wilayah">
+        <button type="button" id="cari-tombol" title="Cari"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+        <datalist id="daftar-wilayah"></datalist>
+      </div>
+      </div>
+      <div id="koordinat" class="koordinat"></div>
+    </main>
   </div>
-  
+
+  <div id="memuat" class="memuat"><div class="spinner"></div><div class="memuat-teks">Memuat…</div></div>
+  <div id="toast" class="toast-kotak" aria-live="polite"></div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/georaster"></script>
-  <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="app.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/peta.js"></script>
+  <script src="js/panel.js"></script>
+  <script src="js/ekspor.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', function () { window.KW.mulai(); });</script>
 </body>
 </html>
