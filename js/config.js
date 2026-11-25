@@ -81,7 +81,7 @@ window.KARHUTLA_CONFIG = {
     gambut:         { label: 'Lahan gambut / KHG', jenis: 'raster', file: 'data/gambut_2.tif', field: 'auto' },
     slope:          { label: 'Kemiringan lereng', jenis: 'raster', file: 'data/SLOPE_1.tif', field: 'auto' },
     aksesibilitas:  { label: 'Aksesibilitas (jarak jalan/sungai/permukiman)', jenis: 'raster', file: 'data/akses_2.tif' },
-    kawasan_hutan:  { label: 'Kawasan hutan / konsesi', jenis: 'vektor', file: 'data/param_kawasan_hutan.geojson', field: 'auto' },
+    kawasan_hutan:  { label: 'Kawasan hutan', jenis: 'raster', file: 'data/3_hutan.tif', field: 'auto' },
     kerapatan_kde:  { label: 'Kerapatan titik api (file KDE)', jenis: 'raster', file: 'data/kerapatan_KDE.tif' },
     fasilitas:      { label: 'Permukiman & fasilitas', jenis: 'titik', file: 'data/dampak_fasilitas.geojson' },
     penduduk:       { label: 'Jumlah penduduk per piksel (mis. WorldPop)', jenis: 'raster', file: null, satuan: 'jiwa' },
