@@ -103,7 +103,8 @@ const DATA_LAYERS = [
     title: 'Aksesibilitas',
     file: './data/akses_2.tif',
     type: 'raster',
-    ramp: 'akses'
+    ramp: 'akses',
+    unit: 'm'
   },
   {
     key: 'kerapatan_api',
