@@ -127,7 +127,7 @@ window.KARHUTLA_CONFIG = {
         parameter: [
           { id: 'tutupan_lahan', nama: 'Tutupan lahan', slot: 'tutupan_lahan', bobot: 1,
             aturan: { metode: 'kategori', peta: { 1: 2, 2: 5, 3: 4, 4: 2, 5: 1 } },
-            label: { 1: 'Hutan', 2: 'Semak/Belukar', 3: 'Pertanian/Perkebunan', 4: 'Permukiman', 5: 'Badan Air' },
+            label: { 1: 'Badan Air', 2: 'Area Non Vegetasi', 3: 'Hutan', 4: 'Pertanian', 5: 'Non Hutan' },
             catatan: '[ASUMSI] skor per kelas, ganti sesuai tabel skor kelompok' },
           { id: 'gambut', nama: 'Lahan gambut', slot: 'gambut', bobot: 1,
             aturan: { metode: 'otomatis', arah: 'naik', skorDiLuar: 1, skorAda: 5 },
