@@ -112,7 +112,6 @@
     { id: 'd_hutan', grup: 'dampak', nama: 'Bahaya tinggi ∩ kawasan hutan', khusus: 'dHutan' },
     { id: 'd_permukiman', grup: 'dampak', nama: 'Permukiman & fasilitas di zona bahaya tinggi', khusus: 'dPermukiman' },
     { id: 'd_prioritas', grup: 'dampak', nama: 'Prioritas mitigasi per kab/kota', khusus: 'dPrioritas' },
-    { id: 'd_terbakar', grup: 'dampak', nama: 'Area terbakar aktual (kejadian)', khusus: 'dTerbakar' }
   ];
   LAPISAN.forEach(l => { l.aktif = false; l.opasitas = l.grup === 'dampak' ? 0.85 : 0.75; l.mode = 'nilai'; l.layer = null; l.kunci = ''; l.legenda = ''; });
   KW.LAPISAN = LAPISAN;
