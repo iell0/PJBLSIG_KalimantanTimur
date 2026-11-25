@@ -10,7 +10,7 @@
   const RAMP = {
     panas: ['#ffffb2', '#fecc5c', '#fd8d3c', '#f03b20', '#bd0026'],
     hujan: ['#f7fbff', '#c6dbef', '#6baed6', '#2171b5', '#08306b'],
-    vegetasi: ['#a50026', '#fdae61', '#ffffbf', '#a6d96a', '#006837'],
+    vegetasi: ['#3288bd', '#a6d96a', '#ffffbf', '#fd7d00', '#dc1010'],
     lembap: ['#8c510a', '#d8b365', '#f6e8c3', '#5ab4ac', '#01665e'],
     suhu: ['#313695', '#74add1', '#ffffbf', '#f46d43', '#a50026'],
     akses: ['#3f007d', '#6a51a3', '#9e9ac8', '#dadaeb', '#fcfbfd'],
