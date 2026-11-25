@@ -20,7 +20,7 @@
 window.KARHUTLA_CONFIG = {
 
   aplikasi: {
-    nama: 'WEBGIS BAHAYA DAN DAMPAK KARHUTLA KALIMANTAN TIMUR',
+    nama: 'WEBGIS KERAWANAN DAN DAMPAK KARHUTLA DI KALIMANTAN TIMUR',
     subjudul: 'Sistem Informasi Geografis untuk Pemodelan Bahaya Kebakaran Hutan dan Lahan',
     identitas: ['GD4103 Sistem Informasi Geografis', 'Kelompok 2 | K-02', 'Institut Teknologi Bandung']
   },
