@@ -34,7 +34,6 @@
       4: '#fd7d00', // Pertanian
       5: '#dc1010'  // Formasi Alami Non Hutan
     };
-  })();
   function warnaRamp(stops, t) {
     t = Math.max(0, Math.min(1, t));
     const p = t * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(p)), f = p - i;
