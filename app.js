@@ -120,11 +120,11 @@ const DATA_LAYERS = [
     type: 'raster',
     categorical: true,
     classes: {
-      1: { label: 'Badan Air', color: '#14532d' },
-      2: { label: 'Semak/Belukar', color: '#65a30d' },
-      3: { label: 'Pertanian', color: '#facc15' },
-      4: { label: 'Permukiman', color: '#dc2626' },
-      5: { label: 'Badan Air', color: '#38bdf8' }
+      1: { label: 'Badan Air', color: '#3288bd' },
+      2: { label: 'Area Non Vegetasi', color: '#a6d96a' },
+      3: { label: 'Hutan', color: '#ffffbf' },
+      4: { label: 'Pertanian', color: '#fd7d00' },
+      5: { label: 'Non Hutan', color: '#dc1010' }
     }
   },
   {
