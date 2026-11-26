@@ -91,7 +91,7 @@ window.KARHUTLA_CONFIG = {
   visualisasi: {
     slopeTiles: {
       aktif: true,
-      nama: 'Kemiringan Lereng',
+      nama: 'Kemiringan Lereng (XYZ Tiles)',
       url: 'data/slope_tiles/{z}/{x}/{y}.png',
       minZoom: 5,
       maxZoom: 16,
