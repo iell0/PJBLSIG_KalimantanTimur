@@ -103,7 +103,7 @@
     { id: 'p_kerapatan_input', grup: 'parameter', nama: 'Kerapatan titik api (masukan model)', slot: '_kerapatan', param: 'kerapatan', ramp: 'kerapatan', satuan: 'titik/km²' },
     { id: 'p_fasilitas', grup: 'parameter', nama: 'Permukiman & fasilitas', slot: 'fasilitas', khusus: 'fasilitas' },
     { id: 'p_hotspot', grup: 'parameter', nama: 'Titik api historis (VIIRS)', slot: 'hotspot', khusus: 'hotspot' },
-    { id: 'p_slope', grup: 'parameter', nama: 'Kemiringan lereng', slot: 'slope', param: 'slope', khusus: 'tileSlope' },
+    { id: 'p_slope_tiles', grup: 'parameter', nama: 'Kemiringan lereng', slot: 'slope', param: 'slope', khusus: 'tileSlope' },
     { id: 'm_kelas', grup: 'model', nama: 'Tingkat bahaya karhutla (5 kelas)', khusus: 'kelas' },
     { id: 'm_indeks', grup: 'model', nama: 'Indeks bahaya kontinu (1–5)', khusus: 'indeks' },
     { id: 'm_kerapatan', grup: 'model', nama: 'Kerapatan titik api (periode tampilan)', khusus: 'kerapatanTampil' },
@@ -190,7 +190,7 @@
         KW.layerSlopeTiles = L.tileLayer(cfg.url, {
           pane: paneName || 'overlayPane',
           minZoom: cfg.minZoom || 5,
-          maxZoom: cfg.maxZoom || 18,
+          maxZoom: cfg.maxZoom || 16,
           minNativeZoom: 12,
           maxNativeZoom: 12,
           tms: false,
