@@ -94,7 +94,7 @@ window.KARHUTLA_CONFIG = {
       nama: 'Kemiringan Lereng',
       url: 'data/slope_tiles/{z}/{x}/{y}.png',
       minZoom: 5,
-      maxZoom: 18,
+      maxZoom: 16,
       opacity: 0.75,
       attribution: 'Slope Map'}
   },
